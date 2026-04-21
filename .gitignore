@@ -1,0 +1,21 @@
+# Android
+.gradle/
+build/
+app/build/
+captures/
+*.iml
+.idea/
+local.properties
+.DS_Store
+
+# Node / React
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+build/
+
+# Binaries
+*.apk
+*.aar
+*.jks

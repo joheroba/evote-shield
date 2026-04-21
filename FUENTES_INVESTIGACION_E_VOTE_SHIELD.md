@@ -20,10 +20,20 @@ Este documento consolida el sustento técnico, legal y científico del proyecto 
 *   **Estructura:** Gráfico Acíclico Dirigido (DAG) donde cada voto valida dos anteriores.
 *   **Ventaja:** Escalabilidad superior a Blockchain tradicional y resistencia a la manipulación por un único administrador de base de datos.
 
+### D. Escrutinio y Segunda Vuelta Instantánea (Optimización de Proceso)
+*   **Viabilidad Técnica:** Dado que el conteo en la Tangle es en tiempo real, la identificación de los dos finalistas es inmediata tras el cierre de mesas.
+*   **Mecanismo:** Actualización dinámica de la interfaz de usuario (App) para habilitar el balotaje de forma sucesiva o mediante voto preferencial (Instant Runoff), eliminando semanas de incertidumbre y costos logísticos.
+
+### E. Centro de Monitoreo Ciudadano (Dashboard)
+*   **Concepto:** Interfaz pública de visualización de datos en tiempo real.
+*   **Transparencia:** Permite a cualquier ciudadano, periodista u observador internacional ver el flujo de votos y la salud de la red sin comprometer el secreto del voto.
+*   **Auditoría Forense:** Capacidad de rastrear cualquier anomalía en el flujo de datos de manera inmediata.
+
 ## 2. Marco Legal Peruano
 *   **Constitución Política del Perú (1993):**
     *   *Artículo 31:* Derecho a la participación ciudadana en asuntos públicos.
-    *   *Artículo 176:* El sistema electoral debe asegurar que las votaciones traduzcan la expresión auténtica, libre y espontánea de los ciudadanos.
+    *   *Artículo 111:* Sustento para la Segunda Vuelta. La norma establece el requisito de la mayoría absoluta sin fijar plazos logísticos inflexibles, permitiendo que la tecnología optimice los tiempos de elección sucesiva.
+    *   *Artículo 176:* El sistema electoral debe asegurar que las votaciones traduzcan la expresión auténtica, libre y espontánea de los ciudadanos. La inmediatez tecnológica refuerza este mandato al reducir el tiempo de exposición a la desinformación y manipulación externa.
 *   **Ley N° 27269 (Ley de Firmas y Certificados Digitales):** Proporciona la misma validez jurídica a una firma digital que a una firma manuscrita, base legal para el voto digital con DNIe.
 
 ## 3. Fuentes Técnicas Internacionales de Referencia

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Main Shield Body -->
+    <path
+        android:fillColor="@color/shield_blue"
+        android:strokeColor="@color/shield_border"
+        android:strokeWidth="2"
+        android:pathData="M54,20 L24,35 V55 C24,75 54,88 54,88 C54,88 84,75 84,55 V35 L54,20 Z" />
+
+    <!-- Inner Shield Detail / Tech Line -->
+    <path
+        android:strokeColor="#40FFFFFF"
+        android:strokeWidth="1"
+        android:pathData="M54,28 L32,39 V55 C32,68 54,78 54,78 C54,78 76,68 76,55 V39 L54,28 Z" />
+
+    <!-- Stylized Checkmark/Vote inside Shield -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48,62 L38,52 L41,49 L48,56 L65,39 L68,42 Z" />
+
+</vector>

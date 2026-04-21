@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "18955744936",
+    "project_id": "e-vote-shield-demo",
+    "storage_bucket": "e-vote-shield-demo.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:18955744936:android:04e920f894fe08c5a1349d",
+        "android_client_info": {
+          "package_name": "com.innovacion.nfc_dni"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbYZu0jja7OeQzcrOLnein2IR5w7LAKvA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -7,17 +7,17 @@ import kotlin.math.sqrt
  * Clase encargada de analizar si el movimiento del celular 
  * corresponde a un patrón humano (micro-temblores).
  */
-class HumanDetector(private val windowSize: Int = 30) {
+class HumanDetector(private val windowSize: Int = 60) { // Aumentamos la ventana para mayor estabilidad
 
     private val samples = mutableListOf<Double>()
     
-    // Umbral de varianza: ajustable según pruebas en hardware real
-    // Un celular sobre una mesa tiene varianza < 0.0005
-    // Un celular en la mano tiene varianza > 0.005
-    private val humanThreshold = 0.003
+    // Umbral de varianza ajustado: 
+    // - Mesa/Inerte: < 0.0001
+    // - Brazo apoyado: 0.0008 - 0.002
+    // - Mano alzada: > 0.005
+    private val humanThreshold = 0.0008 // Más permisivo para brazos apoyados
 
     fun addSample(x: Float, y: Float, z: Float): Boolean {
-        // 1. Calcular Magnitud del Vector (Independiente de la rotación)
         val magnitude = sqrt(x.toDouble().pow(2.0) + y.toDouble().pow(2.0) + z.toDouble().pow(2.0))
         
         samples.add(magnitude)
@@ -26,7 +26,8 @@ class HumanDetector(private val windowSize: Int = 30) {
             samples.removeAt(0)
             
             val variance = calculateVariance(samples)
-            return variance > humanThreshold
+            // Filtramos picos de ruido extremo y nos quedamos con el rango humano real
+            return variance > humanThreshold && variance < 0.5
         }
         
         return false

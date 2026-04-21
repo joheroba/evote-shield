@@ -1,3 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">NFC DNIe Innovacion</string>
+    <string name="app_name">E-Vote Shield</string>
+    <string name="status_analyzing">⚖️ Analizando Pulso...</string>
+    <string name="status_waiting">📡 Esperando DNIe...</string>
+    <string name="status_instruction">Acerque su documento al sensor</string>
+    <string name="btn_vote">EMITIR VOTO 🗳️</string>
+    <string name="vote_count_template">Votos en Tangle: %1$d</string>
+    <string name="error_no_nfc">❌ Error: Este equipo no tiene NFC</string>
+    <string name="nfc_disabled">NFC Desactivado</string>
+    <string name="nfc_enable_prompt">Por favor, activa el NFC en los ajustes para votar.</string>
+    <string name="btn_open_settings">Abrir Ajustes</string>
+    <string name="status_validated">🔵 Identidad Validada por DNIe</string>
+    <string name="nfc_received">📡 Credencial NFC Recibida</string>
+    <string name="voto_registrado">✅ Voto Registrado en Tangle</string>
 </resources>

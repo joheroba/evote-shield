@@ -1,0 +1,4 @@
+com.innovacion.nfc_dni.test.app-androidTest-0 C:\NFC_DNIe_Innovacion\app\build\generated\res\resValues\androidTest\debug
+com.innovacion.nfc_dni.test.app-mergeDebugAndroidTestResources-1 C:\NFC_DNIe_Innovacion\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\merged.dir
+com.innovacion.nfc_dni.test.app-mergeDebugAndroidTestResources-2 C:\NFC_DNIe_Innovacion\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\stripped.dir
+com.innovacion.nfc_dni.test.app-merged_res-3 C:\NFC_DNIe_Innovacion\app\build\intermediates\merged_res\debugAndroidTest

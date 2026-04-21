@@ -10,10 +10,12 @@ const slides = [
   { id: 2, component: "SlideDiagnostico" },
   { id: 3, component: "SlideSolucion" },
   { id: 4, component: "SlidePilar1" },
-  { id: 5, component: "SlidePilar2" },
-  { id: 6, component: "SlideMonitor" }, // Nuevo Slide: Centro de Monitoreo
-  { id: 7, component: "SlideImpacto" },
-  { id: 8, component: "SlideCierre" },
+  { id: 5, component: "SlideBlindaje" }, // Blindaje Biométrico
+  { id: 6, component: "SlideDobleValidacion" }, // Nuevo Slide: Doble Validación (Padrón + Tangle)
+  { id: 7, component: "SlidePilar2" },
+  { id: 8, component: "SlideMonitor" },
+  { id: 9, component: "SlideImpacto" },
+  { id: 10, component: "SlideCierre" },
 ];
 
 // --- ICONS & ANIMATED COMPONENTS ---
@@ -27,6 +29,32 @@ function ShieldIcon({ size = 48, animate = false }) {
       <path d="M24 4L6 12V24C6 34.5 14 44 24 46C34 44 42 34.5 42 24V12L24 4Z" fill="none" stroke="#1B6EF3" strokeWidth="2.5"/>
       <path d="M16 24L21 29L32 18" stroke="#1B6EF3" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
+  );
+}
+
+function AuthorityIcon({ active = false }) {
+  return (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+      <circle cx="20" cy="12" r="6" stroke={active ? "#22C55E" : "#cbd5e1"} strokeWidth="2"/>
+      <path d="M10 32C10 26 14 22 20 22C26 22 30 26 30 32" stroke={active ? "#22C55E" : "#cbd5e1"} strokeWidth="2" strokeLinecap="round"/>
+      {active && <circle cx="32" cy="12" r="4" fill="#22C55E">
+        <animate attributeName="opacity" values="0;1;0" dur="1s" repeatCount="indefinite" />
+      </circle>}
+    </svg>
+  );
+}
+
+function ServerIcon({ label, active, color }) {
+  return (
+    <div style={{ textAlign: "center" }}>
+      <svg width="50" height="50" viewBox="0 0 50 50" fill="none">
+        <rect x="5" y="5" width="40" height="12" rx="2" fill={active ? color : "#f1f5f9"} stroke={active ? color : "#cbd5e1"} strokeWidth="2"/>
+        <rect x="5" y="19" width="40" height="12" rx="2" fill={active ? color : "#f1f5f9"} stroke={active ? color : "#cbd5e1"} strokeWidth="2"/>
+        <rect x="5" y="33" width="40" height="12" rx="2" fill={active ? color : "#f1f5f9"} stroke={active ? color : "#cbd5e1"} strokeWidth="2"/>
+        {active && <circle cx="38" cy="11" r="2" fill="white"><animate attributeName="opacity" values="0;1;0" dur="0.8s" repeatCount="indefinite"/></circle>}
+      </svg>
+      <p style={{ fontSize: "10px", fontWeight: "bold", marginTop: "5px", color: active ? "#1e293b" : "#94a3b8" }}>{label}</p>
+    </div>
   );
 }
 
@@ -155,6 +183,117 @@ function SlidePilar1({ visible }) {
   );
 }
 
+function SlideBlindaje({ visible }) {
+  const [step, setStep] = useState(0);
+  const authorities = ["JNE", "ONPE", "SOCIEDAD CIVIL"];
+
+  useEffect(() => {
+    if (step < 3) {
+      const timer = setTimeout(() => setStep(step + 1), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
+
+  return (
+    <div className="slide-container" style={{ background: "#f8fafc" }}>
+      <p className="label-blue">BLINDAJE DE SEGURIDAD</p>
+      <h2 className="title-small" style={{fontSize: "30px"}}>QUÓRUM BIOMÉTRICO<br/>DE APERTURA</h2>
+      <p className="desc-text" style={{marginBottom: "20px"}}>La elección solo se activa con el consenso digital de las autoridades.</p>
+
+      <div className="auth-grid" style={{
+        display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px", marginBottom: "30px"
+      }}>
+        {authorities.map((a, i) => (
+          <div key={i} style={{
+            textAlign: "center", padding: "10px", borderRadius: "12px",
+            background: i < step ? "#f0fdf4" : "#fff",
+            border: i < step ? "2px solid #22C55E" : "1px solid #e2e8f0",
+            transition: "all 0.5s ease"
+          }}>
+            <AuthorityIcon active={i < step} />
+            <p style={{fontSize: "9px", fontWeight: "bold", marginTop: "5px"}}>{a}</p>
+            <p style={{fontSize: "8px", color: i < step ? "#22C55E" : "#94a3b8"}}>
+              {i < step ? "✓ DNIe + FACIAL" : "PENDIENTE"}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <div style={{
+        padding: "15px", borderRadius: "12px", background: step === 3 ? "#1B6EF3" : "#e2e8f0",
+        color: step === 3 ? "#fff" : "#94a3b8", textAlign: "center", transition: "all 0.5s"
+      }}>
+        <p style={{fontFamily: "Bebas Neue", fontSize: "20px", margin: 0}}>
+          {step === 3 ? "🔓 CÉDULA DESBLOQUEADA" : "🔒 ESPERANDO CONSENSO..."}
+        </p>
+      </div>
+
+      <p style={{fontSize: "11px", marginTop: "20px", color: "#64748b", fontStyle: "italic"}}>
+        Ninguna persona sola puede alterar la lista de candidatos.
+      </p>
+    </div>
+  );
+}
+
+function SlideDobleValidacion({ visible }) {
+  const [validating, setValidating] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setValidating(false), 2500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="slide-container" style={{ background: "#fff" }}>
+      <p className="label-blue">VALIDACIÓN DESCENTRALIZADA</p>
+      <h2 className="title-small" style={{fontSize: "32px"}}>ARQUITECTURA DE<br/>DOBLE NODO</h2>
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "40px 0", position: "relative" }}>
+        <ServerIcon label="RENIEC" active={true} color="#1B6EF3" />
+
+        <div style={{ flex: 1, height: "2px", background: "#e2e8f0", margin: "0 10px", position: "relative" }}>
+          {validating && <div style={{
+            position: "absolute", width: "10px", height: "10px", background: "#1B6EF3", borderRadius: "50%",
+            left: 0, animation: "move-right 2s infinite ease-in-out"
+          }}/>}
+        </div>
+
+        <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: validating ? "#f1f5f9" : "#22C55E", display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #e2e8f0" }}>
+           <span style={{fontSize: "20px"}}>{validating ? "⌛" : "✅"}</span>
+        </div>
+
+        <div style={{ flex: 1, height: "2px", background: "#e2e8f0", margin: "0 10px", position: "relative" }}>
+           {!validating && <div style={{
+            position: "absolute", width: "10px", height: "10px", background: "#22C55E", borderRadius: "50%",
+            left: 0, animation: "move-right 2s infinite ease-in-out"
+          }}/>}
+        </div>
+
+        <ServerIcon label="JNE (TANGLE)" active={!validating} color="#22C55E" />
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div style={{ display: "flex", gap: "10px", opacity: validating ? 1 : 0.5 }}>
+          <span style={{color: "#1B6EF3"}}>●</span>
+          <p style={{fontSize: "12px"}}><strong>NODO A:</strong> Verifica que el DNI sea elegible y esté activo (No fallecido).</p>
+        </div>
+        <div style={{ display: "flex", gap: "10px", opacity: !validating ? 1 : 0.5 }}>
+          <span style={{color: "#22C55E"}}>●</span>
+          <p style={{fontSize: "12px"}}><strong>NODO B:</strong> Verifica que no exista un voto previo registrado en la red.</p>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes move-right {
+          0% { left: 0%; opacity: 0; }
+          50% { opacity: 1; }
+          100% { left: 90%; opacity: 0; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 function SlidePilar2({ visible }) {
   const [votes, setVotes] = useState([]);
   const addVote = () => {
@@ -268,7 +407,7 @@ function SlideCierre({ visible }) {
 
 const SLIDE_COMPONENTS = {
   SlideTitle, SlideDiagnostico, SlideSolucion,
-  SlidePilar1, SlidePilar2, SlideMonitor, SlideImpacto, SlideCierre
+  SlidePilar1, SlideBlindaje, SlideDobleValidacion, SlidePilar2, SlideMonitor, SlideImpacto, SlideCierre
 };
 
 export default function App() {

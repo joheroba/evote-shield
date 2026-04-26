@@ -7,9 +7,12 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.net.Uri
 import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.InputFilter
 import android.text.InputType
 import android.view.Gravity
@@ -29,10 +32,11 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
     private lateinit var btnVote: Button
     private lateinit var btnScanQr: Button
     private lateinit var partySelector: RadioGroup
-    private lateinit var categoryTitle: TextView
-    private lateinit var instructionText: TextView
+    private lateinit var candidatesScroll: ScrollView
     private lateinit var preferentialContainer: LinearLayout
     private lateinit var preferentialInputs: LinearLayout
+    private lateinit var categoryTitle: TextView
+    private lateinit var instructionText: TextView
     
     private var sensorManager: SensorManager? = null
     private var accelerometer: Sensor? = null
@@ -48,29 +52,32 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
     private val userVotes = mutableListOf<UserVote>()
     private val prefEditTexts = mutableListOf<EditText>()
 
+    private val MONITOR_URL = "https://evote-shield.vercel.app/?mode=monitor"
+    private val mainHandler = Handler(Looper.getMainLooper())
+    
+    private val ID_VOTO_BLANCO = View.generateViewId()
+
     private val scannerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val barcodeData = result.data?.getStringExtra("SCAN_RESULT")
-            if (barcodeData != null) {
-                val voterId = "QR-" + barcodeData.take(10)
-                checkGlobalVoterStatus(voterId) { isDoubleVote ->
-                    if (isDoubleVote) {
-                        handleDoubleVoteError()
-                    } else {
-                        currentVoterId = voterId
-                        statusText.text = "🟡 Identidad Validada por Escáner QR"
-                        statusText.setTextColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
-                        checkVoteEligibility()
-                        Toast.makeText(this, "DNI Escaneado con Éxito", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
+            barcodeData?.let { validateVoterId("QR-" + it.take(10)) }
         }
     }
 
-    private fun checkGlobalVoterStatus(voterId: String, callback: (Boolean) -> Unit) {
+    private fun validateVoterId(voterId: String) {
         statusText.text = "🔍 Verificando DNI en la red..."
-        dagManager.checkGlobalVoterStatus(voterId, callback)
+        dagManager.checkGlobalVoterStatus(voterId) { isDoubleVote ->
+            runOnUiThread {
+                if (isDoubleVote) {
+                    handleDoubleVoteError()
+                } else {
+                    currentVoterId = voterId
+                    statusText.text = "✅ Identidad Validada"
+                    statusText.setTextColor(ContextCompat.getColor(this, android.R.color.holo_green_dark))
+                    checkVoteEligibility()
+                }
+            }
+        }
     }
 
     private fun handleDoubleVoteError() {
@@ -78,9 +85,9 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
         statusText.text = "❌ ERROR: DNI ya ha votado"
         statusText.setTextColor(ContextCompat.getColor(this, android.R.color.holo_red_dark))
         AlertDialog.Builder(this)
-            .setTitle("Intento de Doble Voto Global")
-            .setMessage("Este documento ya tiene un voto registrado en la base de datos nacional. El sistema E-Vote Shield impide la duplicidad en tiempo real.")
-            .setPositiveButton("Entendido", null)
+            .setTitle("Intento de Doble Voto")
+            .setMessage("Este DNI ya registró un voto. El sistema E-Vote Shield impide la duplicidad global en tiempo real.")
+            .setPositiveButton("Cerrar", null)
             .show()
         checkVoteEligibility()
     }
@@ -98,8 +105,9 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
         btnVote = findViewById(R.id.btn_vote)
         btnScanQr = findViewById(R.id.btn_scan_qr)
         partySelector = findViewById(R.id.party_selector)
+        candidatesScroll = findViewById(R.id.candidates_scroll)
         categoryTitle = findViewById(R.id.category_title)
-        instructionText = findViewById(R.id.instruction_text) ?: TextView(this)
+        instructionText = findViewById(R.id.instruction_text)
         preferentialContainer = findViewById(R.id.preferential_container)
         preferentialInputs = findViewById(R.id.preferential_inputs)
         
@@ -107,65 +115,63 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
-        btnVote.setOnClickListener {
-            processNextStep()
-        }
-
-        btnScanQr.setOnClickListener {
-            val intent = Intent(this, ScannerActivity::class.java)
-            scannerLauncher.launch(intent)
-        }
+        btnVote.setOnClickListener { processNextStep() }
+        btnScanQr.setOnClickListener { scannerLauncher.launch(Intent(this, ScannerActivity::class.java)) }
         
         loadCurrentStep()
         updateUI()
+        testDatabaseConnection()
+    }
+
+    private fun testDatabaseConnection() {
+        statusText.text = "🌐 Verificando red E-Vote Shield..."
+        dagManager.testFirebaseConnection { isConnected ->
+            runOnUiThread {
+                if (isConnected) {
+                    statusText.text = "📡 Sistema Online - Listo para DNI"
+                    statusText.setTextColor(ContextCompat.getColor(this, android.R.color.holo_blue_dark))
+                } else {
+                    statusText.text = "⚠️ Modo Offline - Verifique conexión"
+                    statusText.setTextColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
+                    Toast.makeText(this, "Error de enlace con el Nodo Central", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
     }
 
     private fun loadCurrentStep() {
         if (electionSteps.isEmpty()) return
-
         val currentStep = electionSteps[currentStepIndex]
+        
         categoryTitle.text = currentStep.title
-        instructionText.text = currentStep.instructionText ?: "Seleccione su opción"
+        instructionText.text = currentStep.instructionText ?: "Seleccione una opción"
         
         partySelector.removeAllViews()
-        
-        if (currentStep.type == VoteType.REFERENDUM) {
-            currentStep.referendumOptions.forEach { option ->
-                val rb = RadioButton(this)
-                rb.id = option.id
-                rb.text = option.text
-                rb.textSize = 24f
-                rb.setPadding(32, 40, 32, 40)
-                partySelector.addView(rb)
-            }
-        } else {
-            currentStep.candidates.forEach { candidate ->
-                val rb = RadioButton(this)
-                rb.id = candidate.id
-                rb.text = "${candidate.partyName}\n(${candidate.name})"
-                rb.setPadding(16, 24, 16, 24)
-                partySelector.addView(rb)
-            }
-            
-            val rbBlanco = RadioButton(this)
-            rbBlanco.id = 999
-            rbBlanco.text = "VOTO EN BLANCO"
-            rbBlanco.setPadding(16, 24, 16, 24)
-            partySelector.addView(rbBlanco)
+        currentStep.candidates.forEach { candidate ->
+            val rb = RadioButton(this)
+            rb.id = candidate.id
+            rb.text = "${candidate.partyName}\n(${candidate.name})"
+            rb.setPadding(16, 24, 16, 24)
+            partySelector.addView(rb)
         }
+        
+        val rbBlanco = RadioButton(this)
+        rbBlanco.id = ID_VOTO_BLANCO
+        rbBlanco.text = "VOTO EN BLANCO"
+        rbBlanco.setPadding(16, 24, 16, 24)
+        partySelector.addView(rbBlanco)
 
         prefEditTexts.clear()
         preferentialInputs.removeAllViews()
-        
         val config = currentStep.prefConfig
-        if (currentStep.type == VoteType.CONGRESSIONAL && config.count > 0) {
+        if (config.count > 0) {
             preferentialContainer.visibility = View.VISIBLE
             for (i in 1..config.count) {
                 val et = EditText(this)
-                val params = LinearLayout.LayoutParams(150, LinearLayout.LayoutParams.WRAP_CONTENT)
-                params.setMargins(16, 0, 16, 0)
+                val params = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                params.setMargins(10, 0, 10, 0)
                 et.layoutParams = params
-                et.hint = "00"
+                et.hint = "#$i"
                 et.gravity = Gravity.CENTER
                 et.inputType = InputType.TYPE_CLASS_NUMBER
                 et.filters = arrayOf(InputFilter.LengthFilter(config.maxValue.toString().length))
@@ -176,19 +182,19 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
             preferentialContainer.visibility = View.GONE
         }
 
-        btnVote.text = if (currentStepIndex == electionSteps.size - 1) "FINALIZAR VOTACIÓN 🗳️" else "SIGUIENTE PASO ➡️"
+        btnVote.text = if (currentStepIndex == electionSteps.size - 1) "ENVIAR VOTO A LA RED 🗳️" else "SIGUIENTE PASO ➡️"
+        candidatesScroll.post { candidatesScroll.scrollTo(0, 0) }
     }
 
     private fun processNextStep() {
         val selectedId = partySelector.checkedRadioButtonId
         if (selectedId == -1) {
-            Toast.makeText(this, "Por favor, seleccione una opción", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Seleccione una opción", Toast.LENGTH_SHORT).show()
             return
         }
 
         val currentStep = electionSteps[currentStepIndex]
         val prefNumbers = mutableListOf<Int>()
-        
         for (et in prefEditTexts) {
             val numStr = et.text.toString()
             if (numStr.isNotEmpty()) {
@@ -201,11 +207,7 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
             }
         }
         
-        userVotes.add(UserVote(
-            categoryTitle = currentStep.title, 
-            selectedOptionId = if (selectedId == 999) null else selectedId,
-            preferentialNumbers = prefNumbers
-        ))
+        userVotes.add(UserVote(currentStep.title, if (selectedId == ID_VOTO_BLANCO) null else selectedId, prefNumbers))
 
         if (currentStepIndex < electionSteps.size - 1) {
             currentStepIndex++
@@ -217,45 +219,67 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
     }
 
     private fun emitirVotoFinalBlindado() {
-        val voterId = currentVoterId
-        if (isHumanVerified && voterId != null) {
-            val voteSummary = userVotes.joinToString(";") { vote ->
-                val prefs = if (vote.preferentialNumbers.isNotEmpty()) " (Prefs: ${vote.preferentialNumbers.joinToString(",")})" else ""
-                "${vote.categoryTitle}:${vote.selectedOptionId}$prefs"
+        val voterId = currentVoterId ?: return
+        
+        btnVote.isEnabled = false
+        btnVote.text = "⌛ REGISTRANDO..."
+        btnVote.backgroundTintList = ContextCompat.getColorStateList(this, android.R.color.darker_gray)
+
+        val timeoutRunnable = Runnable {
+            if (btnVote.text == "⌛ REGISTRANDO...") {
+                btnVote.isEnabled = true
+                btnVote.text = "REINTENTAR (ERROR DE RED)"
+                btnVote.backgroundTintList = ContextCompat.getColorStateList(this, android.R.color.holo_red_dark)
+                Toast.makeText(this, "La red está tardando demasiado. Verifique su conexión.", Toast.LENGTH_LONG).show()
             }
-            val signature = securityVault.signVote(voteSummary)
-            
-            dagManager.addVote("VOTOS:$voteSummary|VOTANTE:$voterId|SIG:$signature", voterId) { success ->
+        }
+        mainHandler.postDelayed(timeoutRunnable, 15000)
+
+        val voteSummary = userVotes.joinToString(";") { "${it.categoryTitle}:${it.selectedOptionId}[${it.preferentialNumbers.joinToString(",")}]" }
+        val signature = securityVault.signVote(voteSummary)
+        
+        dagManager.addVote("VOTE:$voteSummary|ID:$voterId|SIG:$signature", voterId) { success ->
+            runOnUiThread {
+                mainHandler.removeCallbacks(timeoutRunnable)
                 if (success) {
-                    mostrarTicketVotacion(voteSummary)
+                    mostrarExitoFinal()
                 } else {
-                    Toast.makeText(this, "Error crítico: El voto ya fue registrado globalmente.", Toast.LENGTH_LONG).show()
+                    btnVote.isEnabled = true
+                    btnVote.text = "REINTENTAR ENVÍO"
+                    btnVote.backgroundTintList = ContextCompat.getColorStateList(this, android.R.color.holo_green_dark)
+                    Toast.makeText(this, "Error al registrar el voto. Reintente.", Toast.LENGTH_LONG).show()
                 }
-                
-                updateUI()
-                currentVoterId = null
-                currentStepIndex = 0
-                userVotes.clear()
-                loadCurrentStep()
-                statusText.text = getString(R.string.status_waiting)
-                statusText.setTextColor(ContextCompat.getColor(this, android.R.color.darker_gray))
-                checkVoteEligibility()
             }
         }
     }
 
-    private fun mostrarTicketVotacion(summary: String) {
-        val hashTicket = securityVault.generateHash("TICKET-${System.currentTimeMillis()}")
+    private fun mostrarExitoFinal() {
+        val hashTicket = securityVault.generateHash("TICKET-${System.currentTimeMillis()}").take(8).uppercase()
         AlertDialog.Builder(this)
-            .setTitle("¡Votación Exitosa!")
-            .setMessage("Sus votos han sido registrados en la Nube y la Tangle.\n\nHash de Auditoría:\n$hashTicket")
-            .setPositiveButton("Cerrar", null)
+            .setTitle("🏆 ¡Votación Completada!")
+            .setMessage("Su voto ha sido inyectado en la Tangle con éxito.\n\nCódigo de Auditoría:\n#$hashTicket\n\n¿Desea ver el monitoreo global en tiempo real?")
+            .setCancelable(false)
+            .setPositiveButton("VER MONITOR 📊") { _, _ ->
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(MONITOR_URL)))
+                resetApp()
+            }
+            .setNegativeButton("CERRAR") { _, _ -> resetApp() }
             .show()
     }
 
+    private fun resetApp() {
+        currentVoterId = null
+        currentStepIndex = 0
+        userVotes.clear()
+        loadCurrentStep()
+        statusText.text = "📡 Esperando Identificación..."
+        statusText.setTextColor(ContextCompat.getColor(this, android.R.color.darker_gray))
+        updateUI()
+        checkVoteEligibility()
+    }
+
     private fun updateUI() {
-        // En un demo a gran escala, el contador podría ser global
-        voteCountText.text = getString(R.string.vote_count_template, dagManager.getVoteCount())
+        voteCountText.text = "Votos en Tangle: ${dagManager.getVoteCount()}"
     }
 
     private fun checkVoteEligibility() {
@@ -266,13 +290,8 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
 
     override fun onResume() {
         super.onResume()
-        nfcAdapter?.enableReaderMode(this, this, 
-            NfcAdapter.FLAG_READER_NFC_A or NfcAdapter.FLAG_READER_NFC_B or 
-            NfcAdapter.FLAG_READER_NFC_F or NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK, 
-            null)
-        accelerometer?.let {
-            sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
-        }
+        nfcAdapter?.enableReaderMode(this, this, NfcAdapter.FLAG_READER_NFC_A or NfcAdapter.FLAG_READER_NFC_B or NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK, null)
+        accelerometer?.let { sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_UI) }
     }
 
     override fun onPause() {
@@ -294,19 +313,7 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
 
     override fun onTagDiscovered(tag: Tag?) {
         runOnUiThread {
-            val voterId = tag?.id?.joinToString("") { "%02X".format(it) }
-            if (voterId != null) {
-                checkGlobalVoterStatus(voterId) { isDoubleVote ->
-                    if (isDoubleVote) {
-                        handleDoubleVoteError()
-                    } else {
-                        currentVoterId = voterId
-                        statusText.text = getString(R.string.status_validated)
-                        statusText.setTextColor(ContextCompat.getColor(this, R.color.primary))
-                        checkVoteEligibility()
-                    }
-                }
-            }
+            tag?.id?.joinToString("") { "%02X".format(it) }?.let { validateVoterId(it) }
         }
     }
 }

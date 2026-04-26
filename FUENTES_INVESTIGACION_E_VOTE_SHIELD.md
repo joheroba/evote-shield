@@ -20,35 +20,31 @@ Este documento consolida el sustento técnico, legal y científico del proyecto 
 *   **Estructura:** Gráfico Acíclico Dirigido (DAG) donde cada voto valida dos anteriores.
 *   **Ventaja:** Escalabilidad superior a Blockchain tradicional y resistencia a la manipulación por un único administrador de base de datos.
 
-### D. Escrutinio y Segunda Vuelta Instantánea (Optimización de Proceso)
-*   **Viabilidad Técnica:** Dado que el conteo en la Tangle es en tiempo real, la identificación de los dos finalistas es inmediata tras el cierre de mesas.
-*   **Mecanismo:** Actualización dinámica de la interfaz de usuario (App) para habilitar el balotaje de forma sucesiva o mediante voto preferencial (Instant Runoff), eliminando semanas de incertidumbre y costos logísticos.
+### D. Padrón Electoral Descentralizado (Doble Nodo de Validación)
+*   **Arquitectura de Verificación:** El sistema separa la identidad de la acción de voto mediante dos nodos independientes:
+    1.  **Nodo de Elegibilidad (Oráculo):** Verifica que el DNI se encuentre en el Padrón Electoral oficial. Para proteger la privacidad, se utilizan **Hashes Criptográficos**; el sistema no conoce el DNI, solo valida su "huella digital" autorizada.
+    2.  **Nodo de Sufragio (Tangle):** Verifica en tiempo real que dicha "huella digital" no haya emitido un voto previo, eliminando el riesgo de doble votación a nivel global.
+*   **Integridad Ciudadana:** Esta separación garantiza que el ente que cuenta los votos (JNE/Tangle) no sea el mismo que valida la identidad (RENIEC), creando un sistema de pesos y contrapesos digital.
 
-### E. Centro de Monitoreo Ciudadano (Dashboard)
-*   **Concepto:** Interfaz pública de visualización de datos en tiempo real.
-*   **Transparencia:** Permite a cualquier ciudadano, periodista u observador internacional ver el flujo de votos y la salud de la red sin comprometer el secreto del voto.
-*   **Auditoría Forense:** Capacidad de rastrear cualquier anomalía en el flujo de datos de manera inmediata.
+### E. Interoperabilidad y Blindaje de Configuración (Cédula Digital Inmutable)
+*   **Mecanismo de Confianza:** Para eliminar el "punto ciego" de la carga dinámica y evitar el envenenamiento de configuración, el sistema implementa un protocolo de **Cédula Blindada**:
+    1.  **Firma Multilateral Biométrica:** El JSON de candidatos debe ser firmado por un quórum de autoridades (DNIe + Reconocimiento Facial).
+    2.  **Validación en APK:** La aplicación bloquea el proceso si la firma de la cédula no coincide con el quórum autorizado.
+    3.  **Hash Génesis en el DAG:** La lista de candidatos queda anclada como el primer bloque de la red Tangle.
+
+### F. Escrutinio y Segunda Vuelta Instantánea
+*   **Viabilidad Técnica:** Conteo en tiempo real que permite identificar finalistas e iniciar el balotaje el mismo día.
+
+### G. Centro de Monitoreo Ciudadano (Dashboard)
+*   **Concepto:** Interfaz pública de visualización de datos en tiempo real para auditoría forense inmediata.
 
 ## 2. Marco Legal Peruano
-*   **Constitución Política del Perú (1993):**
-    *   *Artículo 31:* Derecho a la participación ciudadana en asuntos públicos.
-    *   *Artículo 111:* Sustento para la Segunda Vuelta. La norma establece el requisito de la mayoría absoluta sin fijar plazos logísticos inflexibles, permitiendo que la tecnología optimice los tiempos de elección sucesiva.
-    *   *Artículo 176:* El sistema electoral debe asegurar que las votaciones traduzcan la expresión auténtica, libre y espontánea de los ciudadanos. La inmediatez tecnológica refuerza este mandato al reducir el tiempo de exposición a la desinformación y manipulación externa.
-*   **Ley N° 27269 (Ley de Firmas y Certificados Digitales):** Proporciona la misma validez jurídica a una firma digital que a una firma manuscrita, base legal para el voto digital con DNIe.
+*   **Constitución Política del Perú (1993):** Artículos 31, 111 (Segunda Vuelta) y 176 (Autenticidad del voto).
+*   **Ley N° 27269 (Ley de Firmas y Certificados Digitales):** Validez jurídica del voto digital.
 
 ## 3. Fuentes Técnicas Internacionales de Referencia
-*   **The Tangle Whitepaper (IOTA Foundation):** Fundamento sobre cómo las redes sin mineros pueden mantener la integridad de los datos de forma gratuita y rápida.
-*   **ICAO Doc 9303 (Machine Readable Travel Documents):** Especificaciones sobre seguridad en chips de identidad que utiliza el DNIe peruano.
-*   **E-Estonia: Voting Case Study:** Análisis del sistema estonio que permite el voto digital desde 2005 con niveles de fraude cercanos a cero.
+*   **The Tangle Whitepaper (IOTA Foundation)**, **ICAO Doc 9303** y **E-Estonia Case Study**.
 
 ## 4. Problemática a Resolver (Contexto de Investigación)
-*   **Vulnerabilidades de la ONPE (Hipótesis de Trabajo):**
-    *   Riesgo de alteración de actas físicas durante el traslado.
-    *   Falta de trazabilidad pública del voto una vez ingresado al sistema central.
-    *   Dificultad de auditoría independiente por parte de la sociedad civil en tiempo real.
-*   **Solución E-Vote Shield:** Traslada la "confianza" desde una institución central hacia un algoritmo matemático auditable por cualquier ciudadano.
-
-## 5. Glosario para Análisis IA
-*   **NFC (Near Field Communication):** Tecnología de comunicación de corto alcance para leer el DNIe.
-*   **Hash de Auditoría:** Identificador único e irreversible de un voto que permite al votante verificar su registro sin revelar su elección.
-*   **Double-Spending (Doble Voto):** Problema que soluciona el DAG al validar en milisegundos si una identidad ya emitió un sufragio en la red global.
+*   **Vulnerabilidades de la ONPE:** Falta de trazabilidad, riesgo de alteración de actas y centralización excesiva de la confianza.
+*   **Solución E-Vote Shield:** Traslada la confianza hacia un algoritmo matemático auditable.

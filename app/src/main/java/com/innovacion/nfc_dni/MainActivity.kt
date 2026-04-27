@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
     private lateinit var preferentialInputs: LinearLayout
     private lateinit var categoryTitle: TextView
     private lateinit var instructionText: TextView
-    
+
     private var sensorManager: SensorManager? = null
     private var accelerometer: Sensor? = null
     private val humanDetector = HumanDetector(windowSize = 60)
@@ -54,13 +54,20 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
 
     private val MONITOR_URL = "https://evote-shield.vercel.app/?mode=monitor"
     private val mainHandler = Handler(Looper.getMainLooper())
-    
-    private val ID_VOTO_BLANCO = View.generateViewId()
+
+    private var idVotoBlanco: Int = -1
 
     private val scannerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val barcodeData = result.data?.getStringExtra("SCAN_RESULT")
-            barcodeData?.let { validateVoterId("QR-" + it.take(10)) }
+            barcodeData?.let { rawData ->
+                val dniNumber = rawData.filter { it.isDigit() }.take(8)
+                if (dniNumber.length == 8) {
+                    validateVoterId(dniNumber)
+                } else {
+                    Toast.makeText(this, "QR no válido o mal leído", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
@@ -96,6 +103,8 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        idVotoBlanco = View.generateViewId()
+
         ElectionProvider.initialize(this)
         electionSteps = ElectionProvider.getElectionSteps()
 
@@ -110,14 +119,14 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
         instructionText = findViewById(R.id.instruction_text)
         preferentialContainer = findViewById(R.id.preferential_container)
         preferentialInputs = findViewById(R.id.preferential_inputs)
-        
+
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
         btnVote.setOnClickListener { processNextStep() }
         btnScanQr.setOnClickListener { scannerLauncher.launch(Intent(this, ScannerActivity::class.java)) }
-        
+
         loadCurrentStep()
         updateUI()
         testDatabaseConnection()
@@ -142,10 +151,10 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
     private fun loadCurrentStep() {
         if (electionSteps.isEmpty()) return
         val currentStep = electionSteps[currentStepIndex]
-        
+
         categoryTitle.text = currentStep.title
         instructionText.text = currentStep.instructionText ?: "Seleccione una opción"
-        
+
         partySelector.removeAllViews()
         currentStep.candidates.forEach { candidate ->
             val rb = RadioButton(this)
@@ -154,9 +163,9 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
             rb.setPadding(16, 24, 16, 24)
             partySelector.addView(rb)
         }
-        
+
         val rbBlanco = RadioButton(this)
-        rbBlanco.id = ID_VOTO_BLANCO
+        rbBlanco.id = idVotoBlanco
         rbBlanco.text = "VOTO EN BLANCO"
         rbBlanco.setPadding(16, 24, 16, 24)
         partySelector.addView(rbBlanco)
@@ -206,8 +215,8 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
                 prefNumbers.add(num)
             }
         }
-        
-        userVotes.add(UserVote(currentStep.title, if (selectedId == ID_VOTO_BLANCO) null else selectedId, prefNumbers))
+
+        userVotes.add(UserVote(currentStep.title, if (selectedId == idVotoBlanco) null else selectedId, prefNumbers))
 
         if (currentStepIndex < electionSteps.size - 1) {
             currentStepIndex++
@@ -220,7 +229,7 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
 
     private fun emitirVotoFinalBlindado() {
         val voterId = currentVoterId ?: return
-        
+
         btnVote.isEnabled = false
         btnVote.text = "⌛ REGISTRANDO..."
         btnVote.backgroundTintList = ContextCompat.getColorStateList(this, android.R.color.darker_gray)
@@ -237,7 +246,7 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
 
         val voteSummary = userVotes.joinToString(";") { "${it.categoryTitle}:${it.selectedOptionId}[${it.preferentialNumbers.joinToString(",")}]" }
         val signature = securityVault.signVote(voteSummary)
-        
+
         dagManager.addVote("VOTE:$voteSummary|ID:$voterId|SIG:$signature", voterId) { success ->
             runOnUiThread {
                 mainHandler.removeCallbacks(timeoutRunnable)

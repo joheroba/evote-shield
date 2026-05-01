@@ -10,17 +10,17 @@ object ElectionProvider {
         electionSteps = if (jsonString != null) {
             parseJson(jsonString)
         } else {
-            getPeruvianElectionMockData()
+            getGlobalTestBallot()
         }
     }
 
     private fun parseJson(json: String): List<ElectionCategory> {
-        return getPeruvianElectionMockData() 
+        return getGlobalTestBallot() 
     }
 
     fun getElectionSteps(): List<ElectionCategory> = electionSteps
 
-    private fun getPeruvianElectionMockData(): List<ElectionCategory> {
+    private fun getGlobalTestBallot(): List<ElectionCategory> {
         val partidosOficiales = listOf(
             Candidate(1, "Victor Garcia", "ALIANZA VENCEREMOS ✌️"),
             Candidate(2, "Elena Rojas", "PARTIDO PATRIÓTICO 🇵🇪"),
@@ -37,25 +37,38 @@ object ElectionProvider {
         )
 
         return listOf(
+            // 1. Pregunta Referéndum
             ElectionCategory(
-                title = "PRESIDENTE Y VICEPRESIDENTES",
+                title = "¿NUEVO PROCESO DE VOTACIÓN?",
+                type = VoteType.REFERENDUM,
+                referendumOptions = listOf(
+                    ReferendumOption(101, "SÍ"),
+                    ReferendumOption(102, "NO")
+                ),
+                instructionText = "Marque con una cruz (+) o un aspa (x) sobre su opción."
+            ),
+            // 2. Pregunta Presidencial
+            ElectionCategory(
+                title = "ELECCIÓN PRESIDENCIAL",
                 type = VoteType.PRESIDENTIAL,
                 candidates = partidosOficiales,
-                instructionText = "Marque con una cruz (+) o un aspa (x) sobre el símbolo."
+                instructionText = "¿Cuál es el candidato presidencial que a su criterio debería ganar?"
             ),
+            // 3. Pregunta Senado
             ElectionCategory(
-                title = "SENADORES NACIONALES",
+                title = "MAYORÍA EN EL SENADO",
                 type = VoteType.CONGRESSIONAL,
                 candidates = partidosOficiales,
                 prefConfig = PreferentialConfig(count = 2, minValue = 1, maxValue = 100),
-                instructionText = "Marque el símbolo y escriba hasta DOS números."
+                instructionText = "¿Qué partido político debería tener mayoría en el senado? (Escriba números si desea voto preferencial)"
             ),
+            // 4. Pregunta Diputados
             ElectionCategory(
-                title = "PARLAMENTO ANDINO",
+                title = "MAYORÍA EN DIPUTADOS",
                 type = VoteType.CONGRESSIONAL,
                 candidates = partidosOficiales,
-                prefConfig = PreferentialConfig(count = 2, minValue = 1, maxValue = 15),
-                instructionText = "Marque el símbolo y escriba hasta DOS números."
+                prefConfig = PreferentialConfig(count = 2, minValue = 1, maxValue = 100),
+                instructionText = "¿Qué partido político debería tener mayoría en diputados?"
             )
         )
     }

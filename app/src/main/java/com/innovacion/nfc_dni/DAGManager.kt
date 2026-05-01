@@ -4,103 +4,106 @@ import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Source
+import com.google.firebase.firestore.FirebaseFirestoreSettings
+import com.google.firebase.auth.FirebaseAuth
 
 class DAGManager {
 
     private val tangle = mutableListOf<VoteBlock>()
     private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
     
     init {
+        setupFirestore()
+        ensureAuth()
+        
         val genesis = VoteBlock("GENESIS_VOTE", "0", "0", 0, 0)
         tangle.add(genesis)
     }
 
-    /**
-     * Prueba técnica de latencia y conexión con Firebase para diagnóstico inicial
-     */
-    fun testFirebaseConnection(callback: (Boolean) -> Unit) {
-        db.collection("padron_nacional").limit(1).get(Source.SERVER)
-            .addOnSuccessListener { callback(true) }
+    private fun setupFirestore() {
+        try {
+            val settings = FirebaseFirestoreSettings.Builder()
+                .setPersistenceEnabled(true)
+                .setCacheSizeBytes(FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED)
+                .build()
+            db.firestoreSettings = settings
+        } catch (e: Exception) {
+            Log.e("DAGManager", "Error en settings: ${e.message}")
+        }
+    }
+
+    private fun ensureAuth() {
+        if (auth.currentUser == null) {
+            auth.signInAnonymously()
+                .addOnSuccessListener { Log.d("DAGManager", "Handshake con Nodo Exitoso") }
+                .addOnFailureListener { e -> Log.e("DAGManager", "Fallo de Handshake: ${e.message}") }
+        }
+    }
+
+    fun testFirebaseConnection(onResult: (Boolean, String?) -> Unit) {
+        if (auth.currentUser == null) {
+            auth.signInAnonymously()
+                .addOnSuccessListener { 
+                    Log.d("DAGManager", "Auth Anónimo Exitoso para Test")
+                    checkConnection(onResult)
+                }
+                .addOnFailureListener { e -> 
+                    val err = "Error Auth: ${e.message}"
+                    Log.e("DAGManager", err)
+                    onResult(false, err)
+                }
+        } else {
+            checkConnection(onResult)
+        }
+    }
+
+    private fun checkConnection(onResult: (Boolean, String?) -> Unit) {
+        // Usamos Source.DEFAULT para que si el internet está lento, 
+        // la app pueda funcionar con datos locales si existen.
+        db.collection("tangle_votos").limit(1).get(Source.DEFAULT)
+            .addOnSuccessListener { 
+                Log.d("DAGManager", "Conexión establecida con Tangle")
+                onResult(true, null) 
+            }
             .addOnFailureListener { e ->
-                Log.e("DAGManager", "Fallo de conexión inicial a Firebase", e)
-                callback(false) 
+                val detailedError = when {
+                    e.message?.contains("Permission denied") == true -> "Error: Permisos (Reglas)"
+                    e.message?.contains("Unable to resolve host") == true -> "Error: Sin Internet"
+                    e.message?.contains("Failed to get document from server") == true -> "Error: Servidor ocupado o lento"
+                    else -> "Error: ${e.localizedMessage ?: e.message}"
+                }
+                Log.e("DAGManager", "Error Firestore: ${e.message}")
+                onResult(false, detailedError) 
             }
     }
 
-    /**
-     * Verifica elegibilidad en Nodo A (RENIEC)
-     */
-    fun checkGlobalVoterStatus(voterId: String, callback: (Boolean) -> Unit) {
-        // Consultamos la colección 'padron_nacional' (Nodo A)
-        db.collection("padron_nacional").document(voterId).get()
-            .addOnSuccessListener { document ->
-                // Si el documento existe y el campo 'ha_votado' es true, es un doble voto
-                val hasVoted = document.getBoolean("ha_votado") ?: false
-                callback(hasVoted)
-            }
-            .addOnFailureListener {
-                Log.e("DAGManager", "Error al consultar padrón", it)
-                callback(false) 
-            }
-    }
-
-    /**
-     * Registro en Nodo A (RENIEC) y Nodo B (TANGLE)
-     */
     fun addVote(encryptedVote: String, voterId: String, onComplete: (Boolean) -> Unit) {
         val tips = getTips()
-        val newBlock = VoteBlock(
-            votePayload = encryptedVote,
-            parent1 = tips.first,
-            parent2 = tips.second
+        val newBlock = VoteBlock(encryptedVote, tips.first, tips.second)
+
+        val voteData = hashMapOf(
+            "payload" to encryptedVote,
+            "timestamp" to FieldValue.serverTimestamp(),
+            "hash" to newBlock.hash,
+            "voterId" to voterId,
+            "device" to android.os.Build.MODEL
         )
 
-        // 1. Actualizamos Nodo A (Marcar como 'ya votó')
-        db.collection("padron_nacional").document(voterId)
-            .update("ha_votado", true)
+        db.collection("tangle_votos").add(voteData)
             .addOnSuccessListener {
-                // 2. Si el Nodo A autoriza, registramos en Nodo B (Tangle)
-                val voteData = mapOf(
-                    "payload" to encryptedVote,
-                    "timestamp" to FieldValue.serverTimestamp(),
-                    "hash" to newBlock.hash
-                )
-
-                db.collection("tangle_votos").add(voteData)
-                    .addOnSuccessListener {
-                        tangle.add(newBlock)
-                        onComplete(true)
-                    }
-                    .addOnFailureListener {
-                        onComplete(false)
-                    }
+                tangle.add(newBlock)
+                onComplete(true)
             }
             .addOnFailureListener { e ->
-                // Si falla el update, es probable que el DNI no exista en el padrón 
-                // o no haya internet. Para la DEMO, si no existe el doc, lo creamos:
-                registrarNuevoVotanteDemo(voterId, encryptedVote, newBlock, onComplete)
+                Log.e("DAGManager", "Error al encolar: ${e.message}")
+                onComplete(false)
             }
-    }
-
-    private fun registrarNuevoVotanteDemo(voterId: String, payload: String, block: VoteBlock, onComplete: (Boolean) -> Unit) {
-        val nuevoVotante = mapOf("ha_votado" to true, "estado" to "ACTIVO")
-        db.collection("padron_nacional").document(voterId).set(nuevoVotante)
-            .addOnSuccessListener {
-                db.collection("tangle_votos").add(mapOf("payload" to payload, "hash" to block.hash))
-                    .addOnSuccessListener { 
-                        tangle.add(block)
-                        onComplete(true) 
-                    }
-            }
-            .addOnFailureListener { onComplete(false) }
     }
 
     private fun getTips(): Pair<String, String> {
-        return if (tangle.size >= 2) {
-            Pair(tangle[tangle.size - 1].hash, tangle[tangle.size - 2].hash)
-        } else {
-            Pair(tangle.last().hash, tangle.last().hash)
-        }
+        return if (tangle.size >= 2) Pair(tangle[tangle.size - 1].hash, tangle[tangle.size - 2].hash)
+        else Pair(tangle.last().hash, tangle.last().hash)
     }
 
     fun getVoteCount(): Int = tangle.size - 1

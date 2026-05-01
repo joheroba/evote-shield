@@ -11,8 +11,8 @@
 
 ### Fase 2: Identificación Inviolable
 *   **Método A (NFC):** Lectura del chip del DNI electrónico. Extrae el identificador único de hardware del chip.
-*   **Método B (QR/PDF417):** Escaneo del código de barras del DNI para dispositivos sin NFC.
-*   **Validación Global:** El sistema consulta en milisegundos una base de datos distribuida (Firebase) para asegurar que ese DNI no ha votado antes en ningún otro lugar del país.
+*   **Método B (PDF417 Binario):** Soporte avanzado para **DNI Azul**. Utiliza decodificación binaria para extraer la identidad incluso en condiciones de baja iluminación o reflejos.
+*   **Validación Global y Resiliencia:** El sistema sincroniza con Firebase Firestore de forma asíncrona, permitiendo la votación incluso en zonas con internet inestable (Edge/2G).
 
 ### Fase 3: Proceso de Votación Multicapa
 *   **Interfaz Dinámica:** La app guía al usuario por todas las categorías (Presidencial, Congresal, Referéndum).

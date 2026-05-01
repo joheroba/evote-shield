@@ -129,9 +129,9 @@ function SlideSolucion({ visible }) {
       <h2 className="title-brand">E-VOTE SHIELD</h2>
       <p className="tagline">TECNOLOGÍA INVIOLABLE PARA EL PERÚ</p>
       <div className="grid-specs">
-        <div className="spec-card"><span>✓</span> NFC</div>
-        <div className="spec-card"><span>✓</span> DAG</div>
-        <div className="spec-card"><span>✓</span> BIOMETRÍA</div>
+        <div className="spec-card"><span>✓</span> NFC / PDF417 BINARY</div>
+        <div className="spec-card"><span>✓</span> TANGLE RESILIENTE</div>
+        <div className="spec-card"><span>✓</span> BIOMETRÍA HR</div>
       </div>
     </div>
   );

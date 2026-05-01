@@ -4,9 +4,10 @@ Este documento describe el funcionamiento técnico y operativo del sistema de vo
 
 ## 🏛️ Los 3 Pilares de Seguridad
 
-### 1. Validación de Identidad (NFC DNIe)
-El sistema utiliza el sensor NFC del dispositivo para comunicarse con el chip del DNI electrónico peruano.
-*   **Seguridad:** Al detectar el tag, se extrae un identificador único que genera un "Token de Sesión". Sin el DNIe físico, la app permanece bloqueada.
+### 1. Validación de Identidad (NFC DNIe / PDF417 Binario)
+El sistema utiliza el sensor NFC del dispositivo para comunicarse con el chip del DNI electrónico peruano o, en su defecto, el escaneo binario de alta densidad para el **DNI Azul**.
+*   **Seguridad:** Se extrae un identificador único que genera un "Token de Sesión". Sin el documento físico, la app permanece bloqueada.
+*   **Soporte DNI Azul:** Implementación de decodificación ISO-8859-1 para capturar datos en condiciones de alta reflexión.
 
 ### 2. Prueba de Vida Mecánica (Acelerómetro)
 Utilizamos el sensor de movimiento para detectar el **Pulso Humano**.

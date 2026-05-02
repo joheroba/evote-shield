@@ -71,17 +71,19 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
         val cleanData = rawData.trim().filter { it.isLetterOrDigit() || it == '<' }
         Log.d("SCANNER_LOG", "Formato: $format | Contenido: $cleanData")
         
-        // 1. ¿ES EL CÓDIGO LINEAL? (Simbologías Code 128 o Code 39)
-        val isLinear = format == Barcode.FORMAT_CODE_128 || format == Barcode.FORMAT_CODE_39 || cleanData.length < 30
+        // 1. ¿ES EL CÓDIGO LINEAL? (DNI Reverso - Simbologías Code 128 o Code 39)
+        val isLinear = format == Barcode.FORMAT_CODE_128 || format == Barcode.FORMAT_CODE_39 || cleanData.length < 15
         
         if (isLinear) {
             val digits = cleanData.filter { it.isDigit() }
             if (digits.length >= 8) {
                 dniHint = digits.take(8)
-                statusText.text = "🆔 Anclaje: $dniHint (Escanee el PDF417)"
-                statusText.setTextColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
-                Toast.makeText(this, "Pista capturada. Ahora enfoque el bloque PDF417 grande.", Toast.LENGTH_SHORT).show()
-                btnScanQr.performClick()
+                statusText.text = "🆔 ANCLAJE ACTIVO: $dniHint\n(Ahora escanee el bloque PDF417 posterior)"
+                statusText.setTextColor(ContextCompat.getColor(this, android.R.color.holo_blue_dark))
+                Toast.makeText(this, "Anclaje capturado. Ahora enfoque el bloque PDF417 en el reverso.", Toast.LENGTH_LONG).show()
+                
+                // Reabre el escáner para capturar el PDF417 denso
+                btnScanQr.postDelayed({ btnScanQr.performClick() }, 1000)
                 return
             }
         }
@@ -94,14 +96,12 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
         if (dniHint != null) {
             confirmedDni = matches.find { it == dniHint }
             if (confirmedDni == null) {
-                // Intento resiliente: coincidencia parcial (7 de 8) por si hay ruido
                 confirmedDni = matches.find { match ->
-                    match.zip(dniHint!!).count { it.first == it.second } >= 7
+                    match.zip(dniHint!!).count { it.first == it.second } >= 6
                 }
             }
         }
         
-        // Si no hay hint o falló el anclaje, buscamos el primer bloque que no parezca una fecha
         if (confirmedDni == null) {
             confirmedDni = matches.find { !it.startsWith("19") && !it.startsWith("20") } ?: matches.firstOrNull()
         }
@@ -112,8 +112,6 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
                 cleanData[dniIndex + 8].toString().uppercase()
             } else "?"
 
-            // Extracción de nombres: En DNI azul suele venir después del verificador
-            // Buscamos el primer bloque de texto significativo después del DNI
             val postDni = cleanData.substring((dniIndex + 9).coerceAtMost(cleanData.length))
             val namesPart = postDni.split("<")
                 .filter { it.length > 2 && !it.all { char -> char.isDigit() } }
@@ -125,11 +123,16 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
             builder.setPositiveButton("VINCULAR") { _, _ ->
                 applyDniFromScanner(confirmedDni!!, verifier, cleanData)
             }
-            builder.setNeutralButton("REINTENTAR") { _, _ -> btnScanQr.performClick() }
-            builder.setNegativeButton("CANCELAR", null)
+            builder.setNeutralButton("REINTENTAR") { _, _ -> 
+                dniHint = null
+                btnScanQr.performClick() 
+            }
+            builder.setNegativeButton("CANCELAR") { _, _ -> dniHint = null }
             builder.show()
         } else {
-            Toast.makeText(this, "No se detectó un DNI válido en el código", Toast.LENGTH_LONG).show()
+            if (format == Barcode.FORMAT_PDF417) {
+                Toast.makeText(this, "PDF417 detectado pero ilegible por reflejos. Intente inclinar el DNI.", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -189,7 +192,6 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
                 statusText.setCompoundDrawablesWithIntrinsicBounds(0, 0, icon, 0)
                 if (!isConnected) {
                     Log.e("DB_FAIL", "Fallo Tangle: $error")
-                    // Feedback técnico para el desarrollador
                     val displayError = if (error?.contains("Permission denied") == true) 
                         "Acceso Denegado (Firestore)" else error?.take(50) ?: "Error de red"
                     

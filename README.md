@@ -15,6 +15,7 @@ A diferencia de los sistemas actuales, E-Vote Shield utiliza una arquitectura de
 - **DNI Azul Legacy Support:** Implementación de decodificación binaria ISO-8859-1 para escaneo de PDF417 en DNIs antiguos.
 - **Protocolo de Resiliencia Firebase:** Sincronización asíncrona y manejo de caché para garantizar la votación en zonas con cobertura limitada.
 - **Anclaje de Identidad:** Sistema de doble escaneo (Lineal + PDF417) para vinculación de identidad 100% infalible.
+- **Sostenibilidad y Transparencia (v1.9):** Integración de flujo de apoyo voluntario (Yape/Plin) y acceso directo al Panel de Monitoreo Tangle post-voto.
 
 ## 📊 Centro de Monitoreo Ciudadano
 Cualquier ciudadano u organismo internacional puede auditar el flujo de votos en tiempo real a través de nuestro portal web, democratizando la vigilancia electoral.

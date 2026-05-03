@@ -94,9 +94,12 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
         var dniIndex = -1
 
         if (dniHint != null) {
-            confirmedDni = matches.find { it == dniHint }
-            if (confirmedDni == null) {
-                confirmedDni = matches.find { match ->
+            // Buscamos primero si la cadena completa contiene el anclaje (resiliencia total)
+            if (cleanData.contains(dniHint!!)) {
+                confirmedDni = dniHint
+            } else {
+                // Si no, buscamos la mejor coincidencia de 8 dígitos en los bloques encontrados
+                confirmedDni = matches.find { it == dniHint } ?: matches.find { match ->
                     match.zip(dniHint!!).count { it.first == it.second } >= 6
                 }
             }
@@ -109,7 +112,8 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
         if (confirmedDni != null) {
             dniIndex = cleanData.indexOf(confirmedDni)
             val verifier = if (dniIndex != -1 && dniIndex + 8 < cleanData.length) {
-                cleanData[dniIndex + 8].toString().uppercase()
+                val v = cleanData[dniIndex + 8].toString().uppercase()
+                if (v.any { it.isLetterOrDigit() }) v else "?"
             } else "?"
 
             val postDni = cleanData.substring((dniIndex + 9).coerceAtMost(cleanData.length))
@@ -118,8 +122,14 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
                 .take(2).joinToString(" ")
 
             val builder = AlertDialog.Builder(this)
-            builder.setTitle("🔍 Sincronización Exitosa")
-            builder.setMessage("DNI: $confirmedDni-$verifier\nCiudadano: ${namesPart.ifEmpty { "Detectado" }}\n\n¿Vincular identidad?")
+            builder.setTitle("🔍 Identidad Detectada")
+            val displayMessage = if (namesPart.isNotEmpty()) {
+                "DNI: $confirmedDni-$verifier\nCiudadano: $namesPart\n\n¿Vincular identidad?"
+            } else {
+                "DNI: $confirmedDni-$verifier\n(Datos adicionales ilegibles)\n\n¿Vincular usando solo DNI?"
+            }
+            
+            builder.setMessage(displayMessage)
             builder.setPositiveButton("VINCULAR") { _, _ ->
                 applyDniFromScanner(confirmedDni!!, verifier, cleanData)
             }
@@ -130,10 +140,24 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
             builder.setNegativeButton("CANCELAR") { _, _ -> dniHint = null }
             builder.show()
         } else {
-            if (format == Barcode.FORMAT_PDF417) {
-                Toast.makeText(this, "PDF417 detectado pero ilegible por reflejos. Intente inclinar el DNI.", Toast.LENGTH_SHORT).show()
+            // Si tenemos el anclaje lineal pero el PDF417 falló
+            if (dniHint != null) {
+                mostrarDialogoAnclajeSolo(dniHint!!)
+            } else if (format == Barcode.FORMAT_PDF417) {
+                Toast.makeText(this, "PDF417 ilegible. Intente escanear el código de barras lineal abajo.", Toast.LENGTH_LONG).show()
             }
         }
+    }
+
+    private fun mostrarDialogoAnclajeSolo(dni: String) {
+        AlertDialog.Builder(this)
+            .setTitle("🆔 Identidad por Anclaje")
+            .setMessage("Se detectó el DNI $dni vía código lineal, pero el bloque PDF417 es ilegible.\n\n¿Desea continuar la votación con validación básica?")
+            .setPositiveButton("CONTINUAR") { _, _ ->
+                applyDniFromScanner(dni, "?", "ANCHOR_ONLY_$dni")
+            }
+            .setNegativeButton("REINTENTAR") { _, _ -> btnScanQr.performClick() }
+            .show()
     }
 
     private fun applyDniFromScanner(dni: String, verifier: String, rawData: String) {
@@ -260,24 +284,52 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
     }
 
     private fun emitirVotoFinalBlindado() {
-        val voterId = currentVoterId ?: return
+        val rawVoterId = currentVoterId ?: return
+        // Sanitización extrema: Solo permitimos letras y números para el ID de Firebase
+        val voterId = rawVoterId.filter { it.isLetterOrDigit() }
+        
         btnVote.isEnabled = false
         btnVote.text = "⌛ REGISTRANDO EN TANGLE..."
         val summary = userVotes.joinToString(";") { "${it.categoryTitle}:${it.selectedOptionId}" }
-        val payload = "VOTE:$summary|ID:$voterId|SIG:${securityVault.signVote(summary)}|META:$currentVoterMeta"
+        val signature = securityVault.signVote(summary)
+        
+        // Creamos un payload limpio
+        val payload = "VOTE:$summary|ID:$voterId|SIG:$signature|META=$currentVoterMeta"
+        
+        Log.d("TANGLE_SUBMIT", "Enviando: $voterId")
         
         dagManager.addVote(payload, voterId) { success ->
-            runOnUiThread { mostrarExitoFinal(offline = !success) }
+            runOnUiThread { 
+                if (!success) {
+                    Log.e("TANGLE_FAIL", "Fallo al registrar voto de $voterId")
+                    Toast.makeText(this, "Error de sincronización. Reintentando localmente...", Toast.LENGTH_SHORT).show()
+                }
+                mostrarExitoFinal(offline = !success) 
+            }
         }
     }
 
     private fun mostrarExitoFinal(offline: Boolean) {
         val ticket = securityVault.generateHash("T-${System.currentTimeMillis()}").take(8).uppercase()
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(if (offline) "📦 Voto Almacenado Localmente" else "🏆 ¡Votación Exitosa!")
+        builder.setMessage("Su voto ha sido cifrado y anonimizado.\nCódigo: #$ticket\n\n¿Te gustaría ver el monitoreo en vivo o apoyar este proyecto?")
+        builder.setCancelable(false)
+        builder.setPositiveButton("CERRAR") { _, _ -> resetApp() }
+        builder.setNeutralButton("APOYAR 🇵🇪") { _, _ -> mostrarDialogoDonacion() }
+        builder.setNegativeButton("VER MONITOREO 📊") { _, _ ->
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(MONITOR_URL))
+            startActivity(intent)
+            resetApp()
+        }
+        builder.show()
+    }
+
+    private fun mostrarDialogoDonacion() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_donation, null)
         AlertDialog.Builder(this)
-            .setTitle(if (offline) "📦 Voto Almacenado Localmente" else "🏆 ¡Votación Exitosa!")
-            .setMessage("Su voto ha sido cifrado y anonimizado.\nCódigo: #$ticket")
-            .setCancelable(false)
-            .setPositiveButton("CERRAR") { _, _ -> resetApp() }
+            .setView(dialogView)
+            .setPositiveButton("LISTO") { _, _ -> resetApp() }
             .show()
     }
 

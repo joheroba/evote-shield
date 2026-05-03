@@ -1,31 +1,21 @@
-# E-Vote Shield 🛡️ | Democracia Digital Inmutable
+# 🛡️ E-Vote Shield v2.0 | Solución Electoral Nacional 2026
+### Democracia Digital Inmutable y Transparente
 
-**E-Vote Shield** es una infraestructura tecnológica disruptiva diseñada para garantizar la integridad, transparencia y eficiencia de los procesos electorales, eliminando los puntos ciegos de los sistemas centralizados tradicionales.
+**E-Vote Shield** es la infraestructura tecnológica definitiva diseñada para blindar el **Plan Electoral Nacional 2026**, garantizando la soberanía absoluta del sufragio mediante criptografía descentralizada.
 
-## 🚀 Innovación de Vanguardia
-A diferencia de los sistemas actuales, E-Vote Shield utiliza una arquitectura descentralizada basada en el **Capítulo III de la Constitución Política del Perú**, devolviendo la soberanía del voto al ciudadano mediante:
-
-- **🔐 Identidad Soberana (DNIe + NFC/PDF417):** Autenticación criptográfica directa desde el chip del DNIe o mediante lectura binaria avanzada de PDF417 (Soporte DNI Azul).
-- **🎭 Biometría Facial con Prueba de Vida:** Eliminación total de la suplantación y los "votos fantasma" (fallecidos).
-- **🕸️ Red Tangle (DAG) Resiliente:** Registro de sufragio inmutable con sincronización optimizada para conexiones de baja velocidad.
-- **🤝 Quórum de Autoridades:** Protocolo de apertura mediante firmas biométricas múltiples (JNE, ONPE, Sociedad Civil).
-- **⚡ Eficiencia Máxima:** Capacidad técnica para realizar la 2da vuelta el mismo día (Art. 111 Const.).
-
-## 🛠️ Hitos de Ingeniería Recientes (v1.8)
-- **DNI Azul Legacy Support:** Implementación de decodificación binaria ISO-8859-1 para escaneo de PDF417 en DNIs antiguos.
-- **Protocolo de Resiliencia Firebase:** Sincronización asíncrona y manejo de caché para garantizar la votación en zonas con cobertura limitada.
-- **Anclaje de Identidad:** Sistema de doble escaneo (Lineal + PDF417) para vinculación de identidad 100% infalible.
-- **Sostenibilidad y Transparencia (v1.9):** Integración de flujo de apoyo voluntario (Yape/Plin) y acceso directo al Panel de Monitoreo Tangle post-voto.
-
-## 📊 Centro de Monitoreo Ciudadano
-Cualquier ciudadano u organismo internacional puede auditar el flujo de votos en tiempo real a través de nuestro portal web, democratizando la vigilancia electoral.
-
-## 📱 Prueba la Demo
-1. **Web Interactiva:** [https://evote-shield.vercel.app](https://evote-shield.vercel.app)
-2. **Descarga la APK:** [Último Lanzamiento (Releases)](https://github.com/joheroba/evote-shield/releases/tag/v1.8-demo)
+## 🚀 Innovaciones v2.0 (Stable)
+- **🔢 Motor D'Hondt Integrado:** Cálculo automático de la cifra repartidora para el Congreso y Parlamento Andino, cumpliendo con la ley orgánica de elecciones.
+- **🗳️ Cédula Oficial 2026:** Soporte para los **35 partidos políticos** y candidatos presidenciales oficiales del Perú.
+- **⚖️ Protocolo de Auditoría Descentralizada:** Acceso de solo lectura para observadores internacionales (OEA/UE) permitiendo la verificación de firmas digitales en tiempo real.
+- **🔐 Soporte Universal DNI:** Lectura binaria resiliente de PDF417 (DNI Azul) y autenticación NFC (DNIe).
+- **🕸️ Inmutabilidad Tangle (DAG):** Cada voto es un bloque inmutable que valida la red entera, eliminando la posibilidad de alteración post-voto.
 
 ## 🏢 Auspiciado por
-Este proyecto ha sido posible gracias al respaldo estratégico de **Quality Informatic Solutions SAC**, empresa líder con más de 15 años de trayectoria en la provisión de soluciones tecnológicas y equipamiento informático para empresas en todo el Perú. Su compromiso con la innovación es el motor de **E-Vote Shield**.
+Este proyecto cuenta con el respaldo estratégico de **Quality Informatic Solutions SAC**, empresa con más de 15 años de trayectoria liderando la infraestructura tecnológica en el Perú. 
+
+## 📊 Ecosistema
+1. **Web Auditoría (Vercel):** [https://evote-shield.vercel.app](https://evote-shield.vercel.app)
+2. **Aplicación Android:** Terminal de votación blindado con tecnología **QIS**.
 
 ---
-*Desarrollado como una prueba de concepto para la transformación digital del sistema electoral peruano.*
+*Cumpliendo los principios constitucionales de transparencia y soberanía del sufragio (Art. 176, 183).*

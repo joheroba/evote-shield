@@ -9,11 +9,20 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="QIS - Quality Informatic Solutions SAC"
-        android:textSize="18sp"
+        android:text="QIS"
+        android:textSize="36sp"
+        android:fontFamily="@font/space_age"
+        android:layout_marginBottom="4dp"
+        android:textColor="#800000" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="QUALITY INFORMATIC SOLUTIONS SAC"
+        android:textSize="10sp"
         android:textStyle="bold"
         android:layout_marginBottom="16dp"
-        android:textColor="#800000" />
+        android:textColor="#1B6EF3" />
 
     <TextView
         android:layout_width="wrap_content"

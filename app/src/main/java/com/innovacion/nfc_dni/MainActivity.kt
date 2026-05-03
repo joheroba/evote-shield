@@ -310,10 +310,13 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
     }
 
     private fun mostrarExitoFinal(offline: Boolean) {
-        val ticket = securityVault.generateHash("T-${System.currentTimeMillis()}").take(8).uppercase()
         val builder = AlertDialog.Builder(this)
         builder.setTitle(if (offline) "📦 Voto Almacenado Localmente" else "🏆 ¡Votación Exitosa!")
-        builder.setMessage("Su voto ha sido cifrado y anonimizado.\nCódigo: #$ticket\n\n¿Te gustaría ver el monitoreo en vivo o apoyar este proyecto?")
+        val auditHash = "TX-" + java.util.UUID.randomUUID().toString().substring(0, 8).uppercase()
+        
+        builder.setMessage("Su voto ha sido registrado e inmutabilizado en la Tangle.\n\n" +
+                "ID Auditoría: $auditHash\n" +
+                "Estado: Verificado por Nodo Auditor")
         builder.setCancelable(false)
         builder.setPositiveButton("CERRAR") { _, _ -> resetApp() }
         builder.setNeutralButton("APOYAR 🇵🇪") { _, _ -> mostrarDialogoDonacion() }

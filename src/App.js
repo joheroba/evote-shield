@@ -12,10 +12,11 @@ const slides = [
   { id: 4, component: "SlidePilar1" },
   { id: 5, component: "SlideBlindaje" },
   { id: 6, component: "SlideDobleValidacion" },
-  { id: 7, component: "SlidePilar2" },
-  { id: 8, component: "SlideMonitor" },
-  { id: 9, component: "SlideImpacto" },
-  { id: 10, component: "SlideCierre" },
+  { id: 7, component: "SlideAuditoria" },
+  { id: 8, component: "SlidePilar2" },
+  { id: 9, component: "SlideMonitor" },
+  { id: 10, component: "SlideImpacto" },
+  { id: 11, component: "SlideCierre" },
 ];
 
 // --- ICONS & ANIMATED COMPONENTS ---
@@ -149,12 +150,29 @@ function SlideSolucion({ visible }) {
         <ShieldIcon size={100} animate={true} />
       </div>
       <h2 className="title-brand">E-VOTE SHIELD</h2>
-      <p className="tagline">TECNOLOGÍA RESPALDADA POR LA INDUSTRIA</p>
-      <div style={{ marginBottom: "20px", textAlign: "center" }}>
-        <img src="https://www.qualityinformatic.com/wp-content/uploads/2021/04/Logo-QIS-1.png" 
-             alt="Quality Informatic Solutions" 
-             style={{ height: "40px", marginBottom: "10px" }} />
+      <div className="tagline">TECNOLOGÍA RESPALDADA POR LA INDUSTRIA</div>
+      
+      <div style={{ margin: "20px 0", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div style={{ 
+          fontFamily: "'SpaceAge', sans-serif", 
+          fontSize: "46px", 
+          color: "#800000", 
+          letterSpacing: "2px",
+          lineHeight: "1.2"
+        }}>
+          QIS
+        </div>
+        <div style={{ 
+          fontSize: "8px", 
+          fontWeight: "bold", 
+          color: "#1B6EF3", 
+          letterSpacing: "2px",
+          marginTop: "4px"
+        }}>
+          QUALITY INFORMATIC SOLUTIONS
+        </div>
       </div>
+
       <div className="grid-specs">
         <div className="spec-card"><span>✓</span> D'HONDT</div>
         <div className="spec-card"><span>✓</span> PDF417 BINARY</div>
@@ -357,9 +375,10 @@ function SlideCierre({ visible }) {
       <h2 className="title-final">DEMOCRACIA<br/>INVIOLABLE</h2>
       <p className="final-text">La tecnología para un Perú libre ya está aquí.</p>
       
-      <div style={{ marginBottom: "20px", fontSize: "12px", color: "#666" }}>
-        <strong>Auspiciado por:</strong> Quality Informatic Solutions SAC<br/>
-        15 años liderando la infraestructura informática en el Perú.
+      <div style={{ margin: "24px 0", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div style={{ fontFamily: "'SpaceAge', sans-serif", fontSize: "36px", color: "#800000", letterSpacing: "2px" }}>QIS</div>
+        <div style={{ fontSize: "7px", fontWeight: "bold", color: "#1B6EF3", letterSpacing: "1px" }}>QUALITY INFORMATIC SOLUTIONS SAC</div>
+        <div style={{ fontSize: "10px", color: "#666", marginTop: "4px" }}>15 años liderando la tecnología en el Perú.</div>
       </div>
 
       <button className="cta-button" onClick={() => window.open('https://github.com/joheroba/evote-shield', '_blank')}>
@@ -370,11 +389,37 @@ function SlideCierre({ visible }) {
   );
 }
 
+function SlideAuditoria({ visible }) {
+  return (
+    <div className="slide-container" style={{ background: "#0F172A", color: "#fff" }}>
+      <p className="label-blue">PROTOCOLO DE AUDITORÍA</p>
+      <h2 className="title-small" style={{color: "#38BDF8", fontSize: "32px"}}>VERIFICACIÓN<br/>DESCENTRALIZADA</h2>
+      <div className="feature-box" style={{background: "rgba(56, 189, 248, 0.1)", border: "1px solid rgba(56, 189, 248, 0.2)"}}>
+        <div className="icon-circle" style={{background: "#38BDF8"}}>OEA</div>
+        <div>
+          <h4 style={{color: "#38BDF8"}}>Observadores Internacionales</h4>
+          <p style={{color: "#cbd5e1"}}>Acceso de solo lectura a la Tangle para auditar firmas en tiempo real sin ver el contenido del voto.</p>
+        </div>
+      </div>
+      <div className="feature-box" style={{background: "rgba(56, 189, 248, 0.1)", border: "1px solid rgba(56, 189, 248, 0.2)"}}>
+        <div className="icon-circle" style={{background: "#38BDF8"}}>PKI</div>
+        <div>
+          <h4 style={{color: "#38BDF8"}}>Integridad Matemática</h4>
+          <p style={{color: "#cbd5e1"}}>Cada voto es un bloque inmutable protegido por criptografía asimétrica (RSA-2048).</p>
+        </div>
+      </div>
+      <p style={{fontSize: "10px", color: "#64748b", textAlign: "center", marginTop: "20dp"}}>
+        Cumplimiento estricto del Protocolo de Auditoría Electoral 2026.
+      </p>
+    </div>
+  );
+}
+
 // --- APP COMPONENT ---
 
 const SLIDE_COMPONENTS = {
   SlideTitle, SlideDiagnostico, SlideSolucion,
-  SlidePilar1, SlideBlindaje, SlideDobleValidacion, SlidePilar2, SlideMonitor, SlideImpacto, SlideCierre
+  SlidePilar1, SlideBlindaje, SlideDobleValidacion, SlideAuditoria, SlidePilar2, SlideMonitor, SlideImpacto, SlideCierre
 };
 
 export default function App() {
@@ -406,6 +451,11 @@ export default function App() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;700&family=JetBrains+Mono&display=swap');
         
+        @font-face {
+          font-family: 'SpaceAge';
+          src: url('/fonts/space_age.ttf') format('truetype');
+        }
+
         .main-wrapper { 
           background: #000; min-height: 100vh; display: flex; align-items: center; justify-content: center; 
           font-family: 'DM Sans', sans-serif; overflow: hidden;

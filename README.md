@@ -24,5 +24,8 @@ Cualquier ciudadano u organismo internacional puede auditar el flujo de votos en
 1. **Web Interactiva:** [https://evote-shield.vercel.app](https://evote-shield.vercel.app)
 2. **Descarga la APK:** [Último Lanzamiento (Releases)](https://github.com/joheroba/evote-shield/releases/tag/v1.8-demo)
 
+## 🏢 Auspiciado por
+Este proyecto ha sido posible gracias al respaldo estratégico de **Quality Informatic Solutions SAC**, empresa líder con más de 15 años de trayectoria en la provisión de soluciones tecnológicas y equipamiento informático para empresas en todo el Perú. Su compromiso con la innovación es el motor de **E-Vote Shield**.
+
 ---
 *Desarrollado como una prueba de concepto para la transformación digital del sistema electoral peruano.*

@@ -6,12 +6,14 @@
     android:padding="24dp"
     android:gravity="center">
 
-    <ImageView
-        android:layout_width="200dp"
-        android:layout_height="60dp"
-        android:src="@drawable/logo_qis"
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="QIS - Quality Informatic Solutions SAC"
+        android:textSize="18sp"
+        android:textStyle="bold"
         android:layout_marginBottom="16dp"
-        android:scaleType="centerInside" />
+        android:textColor="#800000" />
 
     <TextView
         android:layout_width="wrap_content"

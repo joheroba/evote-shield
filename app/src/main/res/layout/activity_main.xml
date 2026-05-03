@@ -17,6 +17,13 @@
             android:gravity="center_horizontal"
             android:padding="20dp">
 
+            <ImageView
+                android:layout_width="160dp"
+                android:layout_height="48dp"
+                android:src="@drawable/logo_qis"
+                android:layout_marginBottom="16dp"
+                android:scaleType="centerInside" />
+
             <TextView
                 android:id="@+id/status_human"
                 android:layout_width="wrap_content"

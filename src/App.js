@@ -153,15 +153,8 @@ function SlideSolucion({ visible }) {
       <div className="tagline">TECNOLOGÍA RESPALDADA POR LA INDUSTRIA</div>
       
       <div style={{ margin: "20px 0", display: "flex", flexDirection: "column", alignItems: "center" }}>
-        {/* QIS High-Fidelity Vector Logo */}
-        <svg width="140" height="45" viewBox="0 0 140 45" fill="none" style={{ filter: "drop-shadow(0px 2px 2px rgba(0,0,0,0.1))" }}>
-          {/* Letter Q */}
-          <path d="M35 22.5C35 30.5 29.5 37 22.5 37C15.5 37 10 30.5 10 22.5C10 14.5 15.5 8 22.5 8C29.5 8 35 14.5 35 22.5ZM32 32L40 40" stroke="#800000" strokeWidth="5" strokeLinecap="round"/>
-          {/* Letter I */}
-          <path d="M55 8V37" stroke="#800000" strokeWidth="5" strokeLinecap="round"/>
-          {/* Letter S */}
-          <path d="M100 8H80C75 8 75 15 80 18C85 21 95 24 100 27C105 30 105 37 100 37H80" stroke="#800000" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
+        {/* Logo QIS con fuente SpaceAge */}
+        <div className="qis-logo-container">QIS</div>
         <div style={{ 
           fontSize: "9px", 
           fontWeight: "bold", 
@@ -377,11 +370,7 @@ function SlideCierre({ visible }) {
       <p className="final-text">La tecnología para un Perú libre ya está aquí.</p>
       
       <div style={{ margin: "24px 0", display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <svg width="100" height="32" viewBox="0 0 140 45" fill="none">
-          <path d="M35 22.5C35 30.5 29.5 37 22.5 37C15.5 37 10 30.5 10 22.5C10 14.5 15.5 8 22.5 8C29.5 8 35 14.5 35 22.5ZM32 32L40 40" stroke="#800000" strokeWidth="5" strokeLinecap="round"/>
-          <path d="M55 8V37" stroke="#800000" strokeWidth="5" strokeLinecap="round"/>
-          <path d="M100 8H80C75 8 75 15 80 18C85 21 95 24 100 27C105 30 105 37 100 37H80" stroke="#800000" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
+        <div className="qis-logo-container">QIS</div>
         <div style={{ fontSize: "7px", fontWeight: "bold", color: "#1B6EF3", letterSpacing: "1px", marginTop: "4px" }}>QUALITY INFORMATIC SOLUTIONS SAC</div>
         <div style={{ fontSize: "10px", color: "#666", marginTop: "4px" }}>15 años liderando la tecnología en el Perú.</div>
       </div>
@@ -459,6 +448,12 @@ export default function App() {
         @font-face {
           font-family: 'SpaceAge';
           src: url('/fonts/space_age.ttf') format('truetype');
+        }
+
+        .qis-logo-container {
+          font-family: 'SpaceAge', sans-serif;
+          font-size: 40px;
+          color: #800000;
         }
 
         .main-wrapper { 

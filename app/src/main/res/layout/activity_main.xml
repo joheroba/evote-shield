@@ -23,7 +23,7 @@
                 android:layout_height="wrap_content"
                 android:text="QIS"
                 android:textSize="32sp"
-                android:textStyle="bold"
+                android:fontFamily="@font/space_age"
                 android:gravity="center"
                 android:layout_marginBottom="4dp"
                 android:textColor="#800000"/>
@@ -31,7 +31,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="QUALITY INFORMATIC SOLUTIONS SAC"
+                android:text="@string/company_name"
                 android:textSize="10sp"
                 android:textStyle="bold"
                 android:gravity="center"
@@ -41,7 +41,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="● AUDITORÍA DESCENTRALIZADA ACTIVA"
+                android:text="@string/active_audit"
                 android:textSize="10sp"
                 android:textColor="#22C55E"
                 android:textStyle="bold"
@@ -51,7 +51,7 @@
                 android:id="@+id/status_human"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="⚖️ Analizando Pulso..."
+                android:text="@string/status_analyzing"
                 android:textSize="18sp"
                 android:textColor="#FF9800"
                 android:textStyle="bold"
@@ -75,7 +75,7 @@
                         android:id="@+id/status_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="📡 Esperando Identificación..."
+                        android:text="@string/status_waiting"
                         android:textSize="15sp"
                         android:textStyle="bold" />
 
@@ -85,7 +85,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="📷 Escanear DNI"
+                        android:text="@string/btn_scan_dni"
                         android:icon="@android:drawable/ic_menu_camera" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -94,7 +94,7 @@
                 android:id="@+id/category_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="CATEGORÍA"
+                android:text="@string/category_label"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="@color/primary"/>
@@ -103,7 +103,7 @@
                 android:id="@+id/instruction_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Instrucciones aquí"
+                android:text="@string/instructions_placeholder"
                 android:textSize="12sp"
                 android:textColor="#777777"
                 android:layout_marginBottom="8dp"
@@ -117,7 +117,7 @@
                 app:cardElevation="2dp"
                 android:layout_marginBottom="12dp">
 
-                <ScrollView
+                <androidx.core.widget.NestedScrollView
                     android:id="@+id/candidates_scroll"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -132,7 +132,7 @@
                         android:padding="8dp">
                         <!-- Candidatos dinámicos -->
                     </RadioGroup>
-                </ScrollView>
+                </androidx.core.widget.NestedScrollView>
             </com.google.android.material.card.MaterialCardView>
 
             <LinearLayout
@@ -145,7 +145,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Voto Preferencial (Escriba el número)"
+                    android:text="@string/preferential_vote_label"
                     android:textSize="13sp"
                     android:textStyle="bold"/>
 
@@ -164,7 +164,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
                 android:layout_marginTop="16dp"
-                android:text="SIGUIENTE PASO ➡️"
+                android:text="@string/btn_vote"
                 android:textSize="18sp"
                 android:enabled="false"
                 android:backgroundTint="#CCCCCC" />
@@ -174,7 +174,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Votos en Tangle: 0"
+                android:text="@string/vote_count_template"
                 android:textSize="14sp"
                 android:textColor="@color/primary"
                 android:textStyle="italic" />

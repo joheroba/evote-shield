@@ -2,10 +2,16 @@
 <resources>
     <string name="app_name">E-Vote Shield</string>
     <string name="status_analyzing">⚖️ Analizando Pulso...</string>
-    <string name="status_waiting">📡 Esperando DNIe...</string>
+    <string name="status_waiting">📡 Esperando Identificación...</string>
     <string name="status_instruction">Acerque su documento al sensor</string>
-    <string name="btn_vote">EMITIR VOTO 🗳️</string>
-    <string name="vote_count_template">Votos en Tangle: %1$d</string>
+    <string name="btn_vote">SIGUIENTE PASO ➡️</string>
+    <string name="btn_scan_dni">📷 Escanear DNI</string>
+    <string name="category_label">CATEGORÍA</string>
+    <string name="instructions_placeholder">Instrucciones aquí</string>
+    <string name="preferential_vote_label">Voto Preferencial (Escriba el número)</string>
+    <string name="vote_count_template">Votos en Tangle: 0</string>
+    <string name="company_name">QUALITY INFORMATIC SOLUTIONS SAC</string>
+    <string name="active_audit">● AUDITORÍA DESCENTRALIZADA ACTIVA</string>
     <string name="error_no_nfc">❌ Error: Este equipo no tiene NFC</string>
     <string name="nfc_disabled">NFC Desactivado</string>
     <string name="nfc_enable_prompt">Por favor, activa el NFC en los ajustes para votar.</string>

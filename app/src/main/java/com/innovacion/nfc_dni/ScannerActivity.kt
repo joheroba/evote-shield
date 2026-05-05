@@ -33,6 +33,7 @@ class ScannerActivity : AppCompatActivity() {
     private lateinit var viewFinder: PreviewView
     private lateinit var hintText: TextView
     private var isScanned = false
+    private var onlyFullData = false
     private val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,7 +43,14 @@ class ScannerActivity : AppCompatActivity() {
         viewFinder = findViewById(R.id.viewFinder)
         hintText = findViewById(R.id.overlay_text) 
         
-        hintText.text = "Enfoque el PDF417 o la franja MRZ (I<PER...) del DNI.\nIncline 15° para evitar reflejos."
+        onlyFullData = intent.getBooleanExtra("ONLY_FULL_DATA", false)
+        
+        if (onlyFullData) {
+            hintText.text = "ANCLAJE CONFIRMADO ✅\nAhora enfoque el bloque PDF417 o la MRZ (I<PER...)"
+            hintText.setBackgroundColor(ContextCompat.getColor(this, android.R.color.holo_green_dark))
+        } else {
+            hintText.text = "Enfoque el PDF417 o la franja MRZ (I<PER...) del DNI.\nIncline 15° para evitar reflejos."
+        }
         hintText.visibility = View.VISIBLE
 
         if (allPermissionsGranted()) {
@@ -74,12 +82,14 @@ class ScannerActivity : AppCompatActivity() {
                 .build()
                 .also { it.setSurfaceProvider(viewFinder.surfaceProvider) }
 
+            val formats = mutableListOf(Barcode.FORMAT_PDF417)
+            if (!onlyFullData) {
+                formats.add(Barcode.FORMAT_CODE_128)
+                formats.add(Barcode.FORMAT_CODE_39)
+            }
+
             val options = BarcodeScannerOptions.Builder()
-                .setBarcodeFormats(
-                    Barcode.FORMAT_PDF417,
-                    Barcode.FORMAT_CODE_128,
-                    Barcode.FORMAT_CODE_39
-                )
+                .setBarcodeFormats(formats[0], *formats.drop(1).toIntArray())
                 .build()
             
             val scanner = BarcodeScanning.getClient(options)
@@ -149,8 +159,10 @@ class ScannerActivity : AppCompatActivity() {
                 if (!isScanned) {
                     textRecognizer.process(image)
                         .addOnSuccessListener { visionText ->
-                            val cleanText = visionText.text.replace(" ", "").replace("\n", "")
-                            val mrzMatch = Regex("I<PER[A-Z0-9<]+").find(cleanText)
+                            val cleanText = visionText.text.replace(" ", "").replace("\n", "").replace("|", "I").uppercase()
+                            // Regex más flexible: I<PER o 1<PER o IDPER (errores comunes de OCR)
+                            val mrzMatch = Regex("[I1|D]<PER[A-Z0-9<]+").find(cleanText)
+                            
                             if (mrzMatch != null && mrzMatch.value.length >= 10 && !isScanned) {
                                 isScanned = true
                                 val intent = Intent().apply {

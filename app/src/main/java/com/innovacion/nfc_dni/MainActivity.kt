@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
     private lateinit var btnVote: Button
     private lateinit var btnScanQr: Button
     private lateinit var partySelector: RadioGroup
-    private lateinit var candidatesScroll: ScrollView
+    private lateinit var candidatesScroll: androidx.core.widget.NestedScrollView
     private lateinit var preferentialContainer: LinearLayout
     private lateinit var preferentialInputs: LinearLayout
     private lateinit var categoryTitle: TextView
@@ -106,7 +106,11 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
                 statusText.text = "🆔 ANCLAJE ACTIVO: $dniHint"
                 statusText.setTextColor(ContextCompat.getColor(this, android.R.color.holo_blue_dark))
                 Toast.makeText(this, "Anclaje capturado. Ahora enfoque el bloque PDF417.", Toast.LENGTH_LONG).show()
-                btnScanQr.postDelayed({ btnScanQr.performClick() }, 1000)
+                
+                val intent = Intent(this, ScannerActivity::class.java).apply {
+                    putExtra("ONLY_FULL_DATA", true)
+                }
+                btnScanQr.postDelayed({ scannerLauncher.launch(intent) }, 1200)
                 return
             }
         }

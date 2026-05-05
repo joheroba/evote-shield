@@ -6,18 +6,18 @@ import React, { useState, useEffect } from "react";
  */
 
 const slides = [
-  { id: 1, component: "SlideTitle" },
-  { id: 2, component: "SlideDiagnostico" },
-  { id: 3, component: "SlideSolucion" },
-  { id: 4, component: "SlideTecnologia" },
-  { id: 5, component: "SlidePilar1" },
-  { id: 6, component: "SlideBlindaje" },
-  { id: 6, component: "SlideDobleValidacion" },
-  { id: 7, component: "SlideAuditoria" },
-  { id: 8, component: "SlidePilar2" },
-  { id: 9, component: "SlideMonitor" },
-  { id: 10, component: "SlideImpacto" },
-  { id: 11, component: "SlideCierre" },
+  { id: 1, component: "SlideTitle", theme: "light" },
+  { id: 2, component: "SlideDiagnostico", theme: "dark" },
+  { id: 3, component: "SlideSolucion", theme: "light" },
+  { id: 4, component: "SlideTecnologia", theme: "dark" },
+  { id: 5, component: "SlidePilar1", theme: "light" },
+  { id: 6, component: "SlideBlindaje", theme: "light" },
+  { id: 7, component: "SlideDobleValidacion", theme: "light" },
+  { id: 8, component: "SlideAuditoria", theme: "dark" },
+  { id: 9, component: "SlidePilar2", theme: "light" },
+  { id: 10, component: "SlideMonitor", theme: "dark" },
+  { id: 11, component: "SlideImpacto", theme: "dark" },
+  { id: 12, component: "SlideCierre", theme: "light" },
 ];
 
 // --- ICONS & ANIMATED COMPONENTS ---
@@ -346,39 +346,122 @@ function SlidePilar2({ visible }) {
 
 function SlideMonitor({ visible }) {
   const [count, setCount] = useState(1240567);
-  const [logs, setLogs] = useState(["TX: 7a2f... Validada", "TX: 9b1c... Validada", "TX: 4e8d... Validada"]);
+  const [logs, setLogs] = useState(["TX: 7a2f... OK", "TX: 9b1c... OK", "TX: 4e8d... OK"]);
+  const [partidos, setPartidos] = useState([
+    { name: "PARTIDO INNOVACIÓN", votos: 450000, color: "#1B6EF3" },
+    { name: "ALIANZA TECNOLÓGICA", votos: 320000, color: "#22C55E" },
+    { name: "FRENTE DIGITAL", votos: 280000, color: "#F59E0B" },
+    { name: "VOTO LIBRE", votos: 190567, color: "#E8252A" }
+  ]);
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setCount(prev => prev + Math.floor(Math.random() * 10));
-      const newHash = "TX: " + Math.random().toString(36).substring(2, 6) + "... Validada";
-      setLogs(prev => [newHash, ...prev.slice(0, 2)]);
-    }, 2000);
+      const increment = Math.floor(Math.random() * 50);
+      setCount(prev => prev + increment);
+      
+      setPartidos(prev => {
+        const newPartidos = [...prev];
+        const rIndex = Math.floor(Math.random() * newPartidos.length);
+        newPartidos[rIndex].votos += increment;
+        return newPartidos.sort((a, b) => b.votos - a.votos);
+      });
+
+      const newHash = "TX: " + Math.random().toString(36).substring(2, 8).toUpperCase() + "... OK";
+      setLogs(prev => [newHash, ...prev.slice(0, 3)]);
+    }, 1500);
     return () => clearInterval(interval);
   }, []);
+
   return (
-    <div className="monitor-fullscreen" style={{ background: "#0F172A", color: "#38BDF8", height: "100%", padding: "40px" }}>
-      <div className="monitor-header">
-        <div className="live-indicator">● LIVE MONITORING</div>
-        <p className="monitor-title" style={{fontSize: "36px"}}>CONTROL CIUDADANO GLOBAL</p>
+    <div className="monitor-fullscreen" style={{ background: "#0F172A", color: "#e2e8f0", height: "100%", padding: "20px", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
+      
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
+        <div>
+          <div className="live-indicator" style={{color: "#ef4444"}}>● LIVE MONITORING TANGLE</div>
+          <p className="monitor-title" style={{fontSize: "24px", color: "#38BDF8"}}>ESCRUTINIO Y ASIGNACIÓN D'HONDT</p>
+        </div>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button className="tool-btn">📊 Estadísticas</button>
+          <button className="tool-btn">🌍 Filtro Regional</button>
+          <button className="tool-btn">🔍 Auditoría PKI</button>
+        </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "30px", marginTop: "40px" }}>
-        <div className="counter-box" style={{ padding: "40px" }}>
-          <p className="label-small" style={{fontSize: "14px"}}>VOTOS EN RED (TANGLE)</p>
-          <div className="main-counter" style={{fontSize: "72px"}}>{count.toLocaleString()}</div>
-          <div className="stats-grid" style={{marginTop: "30px"}}>
-            <div className="stat-mini"><p>D'HONDT STATUS</p><span style={{color: "#22C55E", fontSize: "24px"}}>ACTIVO</span></div>
-            <div className="stat-mini"><p>NODOS</p><span style={{fontSize: "24px"}}>35 PKI</span></div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "15px", flex: 1 }}>
+        
+        {/* Left: Global Counter & Logs */}
+        <div className="counter-box" style={{ padding: "15px", display: "flex", flexDirection: "column", height: "100%", boxSizing: "border-box" }}>
+          <p className="label-small" style={{fontSize: "11px", marginBottom: "5px"}}>VOTOS TOTALES VALIDADOS</p>
+          <div className="main-counter" style={{fontSize: "36px", color: "#fff", margin: "5px 0 15px"}}>{count.toLocaleString()}</div>
+          
+          <p className="label-xs" style={{fontSize: "10px", marginTop: "auto", marginBottom: "5px"}}>HASHES DE AUDITORÍA EN VIVO</p>
+          <div className="log-panel" style={{ padding: "10px", background: "#000", minHeight: "80px" }}>
+            {logs.map((log, i) => (
+              <div key={i} className="log-entry" style={{fontSize: "11px", color: "#38bdf8"}}>{log}</div>
+            ))}
           </div>
         </div>
 
-        <div className="log-panel" style={{ padding: "30px" }}>
-          <p className="label-xs" style={{fontSize: "12px"}}>HASHES DE AUDITORÍA</p>
-          {logs.map((log, i) => (
-            <div key={i} className="log-entry" style={{fontSize: "18px", padding: "10px 0"}}>{log}</div>
-          ))}
+        {/* Middle: Resultados / Votos */}
+        <div className="counter-box" style={{ padding: "15px", height: "100%", boxSizing: "border-box" }}>
+          <p className="label-small" style={{fontSize: "11px", marginBottom: "15px"}}>TENDENCIA DE VOTACIÓN</p>
+          {partidos.map((p, i) => {
+            const percent = ((p.votos / count) * 100).toFixed(1);
+            return (
+              <div key={i} style={{marginBottom: "12px"}}>
+                <div style={{display: "flex", justifyContent: "space-between", fontSize: "10px", fontWeight: "bold"}}>
+                  <span>{p.name}</span>
+                  <span>{percent}% ({p.votos.toLocaleString()})</span>
+                </div>
+                <div style={{width: "100%", background: "#1e293b", height: "6px", borderRadius: "3px", marginTop: "4px"}}>
+                  <div style={{width: `${percent}%`, background: p.color, height: "100%", borderRadius: "3px", transition: "width 0.5s ease"}} />
+                </div>
+              </div>
+            );
+          })}
         </div>
+
+        {/* Right: Motor D'Hondt (Curules) */}
+        <div className="counter-box" style={{ padding: "15px", height: "100%", boxSizing: "border-box", overflowY: "auto" }}>
+          <p className="label-small" style={{fontSize: "11px", marginBottom: "10px"}}>MOTOR D'HONDT (CURULES)</p>
+          <div style={{display: "flex", flexDirection: "column", gap: "10px"}}>
+            
+            <div style={{background: "rgba(0,0,0,0.3)", padding: "10px", borderRadius: "8px"}}>
+              <p style={{fontSize: "10px", color: "#94a3b8", margin: "0 0 8px"}}>SENADORES (60 escaños)</p>
+              {partidos.slice(0,3).map((p, i) => {
+                const escanos = Math.floor((p.votos / count) * 60);
+                return (
+                  <div key={i} style={{display: "flex", justifyContent: "space-between", fontSize: "10px", marginBottom: "5px"}}>
+                    <span style={{color: p.color}}>{p.name.substring(0,12)}...</span>
+                    <span style={{fontWeight: "bold", color: "#fff"}}>{escanos} escaños</span>
+                  </div>
+                )
+              })}
+            </div>
+
+            <div style={{background: "rgba(0,0,0,0.3)", padding: "10px", borderRadius: "8px"}}>
+              <p style={{fontSize: "10px", color: "#94a3b8", margin: "0 0 8px"}}>DIPUTADOS (130 escaños)</p>
+              {partidos.map((p, i) => {
+                const escanos = Math.floor((p.votos / count) * 130);
+                return (
+                  <div key={i} style={{display: "flex", justifyContent: "space-between", fontSize: "10px", marginBottom: "5px"}}>
+                    <span style={{color: p.color}}>{p.name.substring(0,12)}...</span>
+                    <span style={{fontWeight: "bold", color: "#fff"}}>{escanos} escaños</span>
+                  </div>
+                )
+              })}
+            </div>
+
+          </div>
+        </div>
+
       </div>
+      
+      <style>{`
+        .tool-btn { background: #1e293b; color: #38bdf8; border: 1px solid #334155; padding: 6px 12px; border-radius: 6px; font-size: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .tool-btn:hover { background: #38bdf8; color: #0f172a; }
+      `}</style>
     </div>
   );
 }
@@ -547,14 +630,20 @@ export default function App() {
         .cta-button:active { transform: scale(0.95); }
         .social-footer { margin-top: 30px; color: #1B6EF3; font-size: 11px; font-weight: bold; letter-spacing: 1px; }
         .controls { position: absolute; bottom: 20px; left: 0; right: 0; display: flex; justify-content: center; gap: 15px; align-items: center; z-index: 10; }
-        .btn-nav { background: rgba(0,0,0,0.05); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; }
-        .dot { width: 8px; height: 8px; background: #ddd; border-radius: 50%; }
+        .btn-nav { background: rgba(0,0,0,0.05); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; transition: 0.3s; color: #333; }
+        .dot { width: 8px; height: 8px; background: #ddd; border-radius: 50%; transition: 0.3s; }
         .dot.active { background: #1B6EF3; width: 20px; border-radius: 10px; }
+        
+        .controls.dark .btn-nav { background: rgba(255,255,255,0.15); color: #fff; }
+        .controls.dark .btn-nav:disabled { opacity: 0.2; }
+        .controls.dark .dot { background: rgba(255,255,255,0.25); }
+        .controls.dark .dot.active { background: #38BDF8; }
+
         @keyframes pulse-shield { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
       `}</style>
       <div className="phone-frame" style={{ opacity: visible ? 1 : 0 }}>
         <SlideComp visible={visible} />
-        <div className="controls">
+        <div className={`controls ${slides[current].theme || 'light'}`}>
           <button className="btn-nav" onClick={() => navigate(-1)} disabled={current === 0}>←</button>
           {slides.map((_, i) => <div key={i} className={`dot ${i === current ? 'active' : ''}`} />)}
           <button className="btn-nav" onClick={() => navigate(1)} disabled={current === slides.length - 1}>→</button>

@@ -16,8 +16,9 @@ const slides = [
   { id: 8, component: "SlideAuditoria", theme: "dark" },
   { id: 9, component: "SlidePilar2", theme: "light" },
   { id: 10, component: "SlideMonitor", theme: "dark" },
-  { id: 11, component: "SlideImpacto", theme: "dark" },
-  { id: 12, component: "SlideCierre", theme: "light" },
+  { id: 11, component: "SlideAhorro", theme: "light" },
+  { id: 12, component: "SlideImpacto", theme: "dark" },
+  { id: 13, component: "SlideCierre", theme: "light" },
 ];
 
 // --- ICONS & ANIMATED COMPONENTS ---
@@ -466,6 +467,45 @@ function SlideMonitor({ visible }) {
   );
 }
 
+function SlideAhorro({ visible }) {
+  return (
+    <div className="slide-container" style={{ background: "#fff" }}>
+      <p className="label-green">EFICIENCIA ESTATAL</p>
+      <h2 className="title-small" style={{fontSize: "36px", marginBottom: "30px"}}>-90% REDUCCIÓN<br/>DE COSTOS</h2>
+      
+      <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+        <div style={{ flex: 1, background: "#fee2e2", padding: "15px", borderRadius: "12px", border: "1px solid #fca5a5" }}>
+          <p style={{ fontSize: "10px", color: "#b91c1c", fontWeight: "bold", margin: "0 0 5px" }}>MODELO TRADICIONAL</p>
+          <p style={{ fontSize: "24px", fontFamily: "Bebas Neue", color: "#991b1b", margin: 0 }}>$160M USD</p>
+          <ul style={{ fontSize: "9px", color: "#7f1d1d", margin: "10px 0 0", paddingLeft: "15px" }}>
+            <li>Impresión de papel</li>
+            <li>Logística FF.AA.</li>
+            <li>Alquiler de locales</li>
+          </ul>
+        </div>
+        
+        <div style={{ flex: 1, background: "#f0fdf4", padding: "15px", borderRadius: "12px", border: "1px solid #86efac" }}>
+          <p style={{ fontSize: "10px", color: "#15803d", fontWeight: "bold", margin: "0 0 5px" }}>E-VOTE SHIELD</p>
+          <p style={{ fontSize: "24px", fontFamily: "Bebas Neue", color: "#166534", margin: 0 }}>$15.7M USD</p>
+          <ul style={{ fontSize: "9px", color: "#14532d", margin: "10px 0 0", paddingLeft: "15px" }}>
+            <li>Infraestructura Cloud</li>
+            <li>Nodos Seguridad HSM</li>
+            <li>Tablets en Plazas</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="feature-box" style={{background: "#f8fafc", border: "1px solid #e2e8f0"}}>
+        <div className="icon-circle" style={{background: "#22c55e", fontSize: "20px"}}>🌱</div>
+        <div>
+          <h4 style={{color: "#1e293b", margin: "0 0 5px"}}>Impacto Ecológico y Social</h4>
+          <p style={{fontSize: "11px", color: "#64748b", margin: 0}}>Cero deforestación por actas de papel. Ahorro de ~$145 Millones USD para el Tesoro Público con resultados en 5 minutos.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SlideImpacto({ visible }) {
   return (
     <div className="slide-container" style={{ background: "linear-gradient(135deg, #1B6EF3 0%, #0d4fc4 100%)", color: "#fff" }}>
@@ -527,7 +567,7 @@ function SlideAuditoria({ visible }) {
 
 const SLIDE_COMPONENTS = {
   SlideTitle, SlideDiagnostico, SlideSolucion, SlideTecnologia,
-  SlidePilar1, SlideBlindaje, SlideDobleValidacion, SlideAuditoria, SlidePilar2, SlideMonitor, SlideImpacto, SlideCierre
+  SlidePilar1, SlideBlindaje, SlideDobleValidacion, SlideAuditoria, SlidePilar2, SlideMonitor, SlideAhorro, SlideImpacto, SlideCierre
 };
 
 export default function App() {

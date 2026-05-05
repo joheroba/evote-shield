@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.innovacion.nfc_dni"
-        minSdk = 26
+        minSdk = 24
         targetSdk = 34
         versionCode = 3
         versionName = "1.2" // Nueva versión para pruebas
@@ -24,6 +24,8 @@ android {
             storePassword = "password123"
             keyAlias = "evote-shield-alias"
             keyPassword = "password123"
+            enableV1Signing = true
+            enableV2Signing = true
         }
     }
 
@@ -60,6 +62,7 @@ dependencies {
 
     // Escaneo de DNI (PDF417) - Sensibilidad Aumentada
     implementation("com.google.mlkit:barcode-scanning:17.2.0")
+    implementation("com.google.mlkit:text-recognition:16.0.0") // Añadido para escaneo MRZ OCR
     implementation("androidx.camera:camera-camera2:1.3.0")
     implementation("androidx.camera:camera-lifecycle:1.3.0")
     implementation("androidx.camera:camera-view:1.3.0")

@@ -22,6 +22,8 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -31,6 +33,7 @@ class ScannerActivity : AppCompatActivity() {
     private lateinit var viewFinder: PreviewView
     private lateinit var hintText: TextView
     private var isScanned = false
+    private val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,8 +42,7 @@ class ScannerActivity : AppCompatActivity() {
         viewFinder = findViewById(R.id.viewFinder)
         hintText = findViewById(R.id.overlay_text) 
         
-        // Mensaje corregido: En ambos tipos de DNI azul, los códigos están en el REVERSO
-        hintText.text = "Enfoque el PDF417 en el REVERSO del DNI.\nIncline 15° para evitar reflejos."
+        hintText.text = "Enfoque el PDF417 o la franja MRZ (I<PER...) del DNI.\nIncline 15° para evitar reflejos."
         hintText.visibility = View.VISIBLE
 
         if (allPermissionsGranted()) {
@@ -58,7 +60,6 @@ class ScannerActivity : AppCompatActivity() {
         cameraProviderFuture.addListener({
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
-            // Usamos ResolutionSelector para asegurar 1080p, vital para el PDF417 denso del DNI azul
             val resolutionSelector = ResolutionSelector.Builder()
                 .setResolutionStrategy(
                     ResolutionStrategy(
@@ -98,10 +99,7 @@ class ScannerActivity : AppCompatActivity() {
             try {
                 cameraProvider.unbindAll()
                 val camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalyzer)
-                
-                // Implementamos Tap-to-Focus para ayudar al sensor a enfocar el código denso
                 setupTapToFocus(camera.cameraControl)
-                
             } catch (exc: Exception) {
                 Toast.makeText(this, "Error de cámara: ${exc.message}", Toast.LENGTH_SHORT).show()
             }
@@ -125,7 +123,6 @@ class ScannerActivity : AppCompatActivity() {
     @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
     private fun processImageProxy(scanner: com.google.mlkit.vision.barcode.BarcodeScanner, imageProxy: ImageProxy) {
         val mediaImage = imageProxy.image ?: return
-        
         val rotationDegrees = imageProxy.imageInfo.rotationDegrees
         val image = InputImage.fromMediaImage(mediaImage, rotationDegrees)
 
@@ -133,8 +130,6 @@ class ScannerActivity : AppCompatActivity() {
             .addOnSuccessListener { barcodes ->
                 if (barcodes.isNotEmpty() && !isScanned) {
                     val barcode = barcodes[0]
-                    // Para PDF417 de DNI, a veces solo se obtiene rawBytes.
-                    // Usamos ISO_8859_1 que es el estándar para los datos de RENIEC.
                     val value = barcode.rawValue ?: barcode.rawBytes?.let { String(it, Charsets.ISO_8859_1) }
                     
                     if (value != null) {
@@ -145,10 +140,31 @@ class ScannerActivity : AppCompatActivity() {
                         }
                         setResult(Activity.RESULT_OK, intent)
                         finish()
+                        imageProxy.close()
+                        return@addOnSuccessListener
                     }
                 }
+                
+                // Fallback: Text Recognition for MRZ
+                if (!isScanned) {
+                    textRecognizer.process(image)
+                        .addOnSuccessListener { visionText ->
+                            val cleanText = visionText.text.replace(" ", "").replace("\n", "")
+                            val mrzMatch = Regex("I<PER[A-Z0-9<]+").find(cleanText)
+                            if (mrzMatch != null && mrzMatch.value.length >= 10 && !isScanned) {
+                                isScanned = true
+                                val intent = Intent().apply {
+                                    putExtra("SCAN_RESULT", mrzMatch.value)
+                                    putExtra("SCAN_FORMAT", -2) // MRZ Indicator
+                                }
+                                setResult(Activity.RESULT_OK, intent)
+                                finish()
+                            }
+                        }
+                        .addOnCompleteListener { imageProxy.close() }
+                }
             }
-            .addOnCompleteListener { imageProxy.close() }
+            .addOnFailureListener { imageProxy.close() }
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {

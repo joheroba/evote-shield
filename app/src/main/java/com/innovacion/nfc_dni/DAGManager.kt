@@ -7,6 +7,8 @@ import com.google.firebase.firestore.Source
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.auth.FirebaseAuth
 
+import com.google.firebase.firestore.PersistentCacheSettings
+
 class DAGManager {
 
     private val tangle = mutableListOf<VoteBlock>()
@@ -24,8 +26,9 @@ class DAGManager {
     private fun setupFirestore() {
         try {
             val settings = FirebaseFirestoreSettings.Builder()
-                .setPersistenceEnabled(true)
-                .setCacheSizeBytes(FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED)
+                .setLocalCacheSettings(PersistentCacheSettings.newBuilder()
+                    .setSizeBytes(FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED)
+                    .build())
                 .build()
             db.firestoreSettings = settings
         } catch (e: Exception) {
@@ -39,6 +42,17 @@ class DAGManager {
                 .addOnSuccessListener { Log.d("DAGManager", "Handshake con Nodo Exitoso") }
                 .addOnFailureListener { e -> Log.e("DAGManager", "Fallo de Handshake: ${e.message}") }
         }
+    }
+
+    fun checkVoterRegistration(voterId: String, onResult: (Boolean) -> Unit) {
+        // En una demo real, consultamos la colección 'padron_prueba'
+        db.collection("padron_prueba").document(voterId).get(Source.DEFAULT)
+            .addOnSuccessListener { document ->
+                onResult(document.exists())
+            }
+            .addOnFailureListener {
+                onResult(false) 
+            }
     }
 
     fun testFirebaseConnection(onResult: (Boolean, String?) -> Unit) {
@@ -59,8 +73,6 @@ class DAGManager {
     }
 
     private fun checkConnection(onResult: (Boolean, String?) -> Unit) {
-        // Usamos Source.DEFAULT para que si el internet está lento, 
-        // la app pueda funcionar con datos locales si existen.
         db.collection("tangle_votos").limit(1).get(Source.DEFAULT)
             .addOnSuccessListener { 
                 Log.d("DAGManager", "Conexión establecida con Tangle")

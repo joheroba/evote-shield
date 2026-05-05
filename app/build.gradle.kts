@@ -67,8 +67,12 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:1.3.0")
     implementation("androidx.camera:camera-view:1.3.0")
 
-    // --- LIBRERÍAS DE INNOVACIÓN DNIe/NFC ---
-    implementation("org.jmrtd:jmrtd:0.7.18")
+    // --- LIBRERÍAS DE INNOVACIÓN DNIe/NFC (Estabilizadas para Android) ---
+    implementation("org.jmrtd:jmrtd:0.7.31") {
+        exclude(group = "org.bouncycastle")
+    }
     implementation("net.sf.scuba:scuba-smartcards:0.0.20")
-    implementation("org.bouncycastle:bcprov-jdk15on:1.70")
+    implementation("org.bouncycastle:bcprov-jdk15to18:1.70")
+    implementation("org.bouncycastle:bcutil-jdk15to18:1.70")
+    implementation("org.bouncycastle:bcpkix-jdk15to18:1.70")
 }

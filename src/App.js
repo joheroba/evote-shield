@@ -17,8 +17,9 @@ const slides = [
   { id: 9, component: "SlidePilar2", theme: "light" },
   { id: 10, component: "SlideMonitor", theme: "dark" },
   { id: 11, component: "SlideAhorro", theme: "light" },
-  { id: 12, component: "SlideImpacto", theme: "dark" },
-  { id: 13, component: "SlideCierre", theme: "light" },
+  { id: 12, component: "SlideRegistro", theme: "light" },
+  { id: 13, component: "SlideImpacto", theme: "dark" },
+  { id: 14, component: "SlideCierre", theme: "light" },
 ];
 
 // --- ICONS & ANIMATED COMPONENTS ---
@@ -506,6 +507,70 @@ function SlideAhorro({ visible }) {
   );
 }
 
+function SlideRegistro({ visible }) {
+  const [dni, setDni] = React.useState("");
+  const [nombre, setNombre] = React.useState("");
+  const [registrado, setRegistrado] = React.useState(false);
+
+  const handleRegistro = () => {
+    if (dni.length < 8 || nombre.length < 3) {
+      alert("Por favor ingrese datos válidos.");
+      return;
+    }
+    // Simulamos guardado local en el navegador para la demo de hoy
+    const padron = JSON.parse(localStorage.getItem("padron_demo") || "[]");
+    padron.push({ dni, nombre });
+    localStorage.setItem("padron_demo", JSON.stringify(padron));
+    setRegistrado(true);
+  };
+
+  return (
+    <div className="slide-container" style={{ background: "#f8fafc" }}>
+      <p className="label-blue">INSCRIPCIÓN ELECTORAL BETA</p>
+      <h2 className="title-small" style={{fontSize: "32px", marginBottom: "10px"}}>REGÍSTRATE PARA LA PRUEBA</h2>
+      <p style={{color: "#64748b", marginBottom: "30px", fontSize: "14px"}}>Ingresa tus datos para ser incluido en el padrón de prueba local.</p>
+      
+      {!registrado ? (
+        <div style={{ maxWidth: "400px", margin: "0 auto", textAlign: "left", background: "#fff", padding: "25px", borderRadius: "16px", boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1)" }}>
+          <label style={{display: "block", fontSize: "11px", color: "#475569", marginBottom: "5px", fontWeight: "bold"}}>DNI (8 DÍGITOS)</label>
+          <input 
+            type="text" 
+            placeholder="00000000"
+            value={dni} 
+            onChange={(e) => setDni(e.target.value.replace(/\D/g, '').slice(0, 8))}
+            style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #cbd5e1", marginBottom: "15px", fontSize: "16px", boxSizing: "border-box" }}
+          />
+          
+          <label style={{display: "block", fontSize: "11px", color: "#475569", marginBottom: "5px", fontWeight: "bold"}}>NOMBRE COMPLETO</label>
+          <input 
+            type="text" 
+            placeholder="Ej: Juan Pérez"
+            value={nombre} 
+            onChange={(e) => setNombre(e.target.value)}
+            style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #cbd5e1", marginBottom: "25px", fontSize: "16px", boxSizing: "border-box" }}
+          />
+          
+          <button 
+            onClick={handleRegistro}
+            style={{ width: "100%", background: "linear-gradient(135deg, #1B6EF3 0%, #0d4fc4 100%)", color: "white", padding: "15px", borderRadius: "8px", border: "none", fontWeight: "bold", cursor: "pointer", transition: "transform 0.2s" }}
+            onMouseEnter={(e) => e.target.style.transform = "scale(1.02)"}
+            onMouseLeave={(e) => e.target.style.transform = "scale(1)"}
+          >
+            INSCRIBIRME EN EL PADRÓN
+          </button>
+        </div>
+      ) : (
+        <div style={{ maxWidth: "400px", margin: "0 auto", textAlign: "center", padding: "40px", background: "#f0fdf4", borderRadius: "16px", border: "1px solid #bbf7d0" }}>
+          <div style={{ fontSize: "40px", marginBottom: "10px" }}>🎉</div>
+          <h3 style={{ color: "#166534", margin: "0 0 10px" }}>¡Inscripción Exitosa!</h3>
+          <p style={{ color: "#15803d", fontSize: "14px", lineHeight: "1.5" }}><b>{nombre}</b>, ya estás habilitado para votar en la prueba local con tu DNI <b>{dni}</b>.</p>
+          <p style={{ fontSize: "12px", color: "#166534", marginTop: "20px", opacity: 0.7 }}>Tu identidad ha sido vinculada al nodo génesis local.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SlideImpacto({ visible }) {
   return (
     <div className="slide-container" style={{ background: "linear-gradient(135deg, #1B6EF3 0%, #0d4fc4 100%)", color: "#fff" }}>
@@ -567,7 +632,7 @@ function SlideAuditoria({ visible }) {
 
 const SLIDE_COMPONENTS = {
   SlideTitle, SlideDiagnostico, SlideSolucion, SlideTecnologia,
-  SlidePilar1, SlideBlindaje, SlideDobleValidacion, SlideAuditoria, SlidePilar2, SlideMonitor, SlideAhorro, SlideImpacto, SlideCierre
+  SlidePilar1, SlideBlindaje, SlideDobleValidacion, SlideAuditoria, SlidePilar2, SlideMonitor, SlideAhorro, SlideRegistro, SlideImpacto, SlideCierre
 };
 
 export default function App() {

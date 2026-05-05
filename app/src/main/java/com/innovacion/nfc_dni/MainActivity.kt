@@ -255,9 +255,29 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
     }
 
     private fun checkVoteEligibility() {
-        btnVote.isEnabled = (isHumanVerified && currentVoterId != null)
-        val color = if (btnVote.isEnabled) android.R.color.holo_green_dark else android.R.color.darker_gray
-        btnVote.backgroundTintList = ContextCompat.getColorStateList(this, color)
+        val voterId = currentVoterId
+        if (voterId == null || !isHumanVerified) {
+            btnVote.isEnabled = false
+            btnVote.backgroundTintList = ContextCompat.getColorStateList(this, android.R.color.darker_gray)
+            return
+        }
+
+        // Consultamos el Padrón de Prueba en Firestore
+        statusText.text = "🔍 Verificando Padrón..."
+        dagManager.checkVoterRegistration(voterId) { registered ->
+            runOnUiThread {
+                if (registered) {
+                    btnVote.isEnabled = true
+                    btnVote.backgroundTintList = ContextCompat.getColorStateList(this, android.R.color.holo_green_dark)
+                    statusText.text = "✅ HABILITADO PARA VOTAR"
+                } else {
+                    btnVote.isEnabled = false
+                    btnVote.backgroundTintList = ContextCompat.getColorStateList(this, android.R.color.holo_red_dark)
+                    statusText.text = "❌ DNI NO REGISTRADO EN EL PADRÓN"
+                    Toast.makeText(this, "Debe registrarse primero en el portal de inscripción", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
     }
 
     override fun onResume() {

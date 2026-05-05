@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscripción Electoral - E-Vote Shield</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: white; margin: 0; padding: 20px; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .card { background: #1e293b; padding: 30px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 100%; max-width: 400px; text-align: center; border: 1px solid #334155; }
+        .logo { font-weight: 800; font-size: 24px; color: #3b82f6; margin-bottom: 10px; display: block; text-decoration: none; }
+        h1 { font-size: 20px; margin-bottom: 25px; color: #f1f5f9; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; font-size: 16px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; border-radius: 8px; border: none; background: #2563eb; color: white; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #1d4ed8; transform: translateY(-2px); }
+        .success { display: none; background: #064e3b; color: #6ee7b7; padding: 20px; border-radius: 12px; margin-top: 20px; border: 1px solid #065f46; }
+        .footer { margin-top: 25px; font-size: 12px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <a href="#" class="logo">E-VOTE SHIELD</a>
+        <h1>Registro de Votante Beta</h1>
+        
+        <div id="form-container">
+            <input type="text" id="nombre" placeholder="Nombre Completo" required>
+            <input type="number" id="dni" placeholder="DNI (8 dígitos)" required>
+            <button id="btn-submit">INSCRIBIRME AHORA</button>
+        </div>
+
+        <div id="success-msg" class="success">
+            <strong>¡Registro Completo!</strong><br>
+            Ya puedes usar la APK con tu DNI para votar.
+        </div>
+
+        <div class="footer">
+            Laboratorio de Innovación Electoral 2026<br>
+            Criptografía Asimétrica de Punto a Punto
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbYZu0jja7OeQzcrOLnein2IR5w7LAKvA",
+            authDomain: "e-vote-shield-demo.firebaseapp.com",
+            projectId: "e-vote-shield-demo",
+            storageBucket: "e-vote-shield-demo.appspot.com"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        document.getElementById('btn-submit').onclick = async () => {
+            const nombre = document.getElementById('nombre').value;
+            const dni = document.getElementById('dni').value;
+
+            if (dni.length !== 8 || nombre.length < 3) {
+                alert("Por favor ingrese un DNI de 8 dígitos y su nombre completo.");
+                return;
+            }
+
+            try {
+                document.getElementById('btn-submit').innerText = "PROCESANDO...";
+                document.getElementById('btn-submit').disabled = true;
+
+                await db.collection('padron_prueba').doc(dni).set({
+                    nombre: nombre,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    habilitado: true
+                });
+
+                document.getElementById('form-container').style.display = 'none';
+                document.getElementById('success-msg').style.display = 'block';
+            } catch (e) {
+                alert("Error al registrar: " + e.message);
+                document.getElementById('btn-submit').innerText = "INSCRIBIRME AHORA";
+                document.getElementById('btn-submit').disabled = false;
+            }
+        };
+    </script>
+</body>
+</html>

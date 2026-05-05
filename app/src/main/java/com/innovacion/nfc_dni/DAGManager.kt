@@ -90,26 +90,37 @@ class DAGManager {
             }
     }
 
-    fun addVote(encryptedVote: String, voterId: String, onComplete: (Boolean) -> Unit) {
-        val tips = getTips()
-        val newBlock = VoteBlock(encryptedVote, tips.first, tips.second)
+    fun addVote(encryptedVote: String, voterId: String, onComplete: (Boolean, String?) -> Unit) {
+        // --- BLINDAJE CONTRA EL DOBLE VOTO ---
+        db.collection("tangle_votos").document(voterId).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    Log.w("DAGManager", "Intento de doble voto detectado para ID: $voterId")
+                    onComplete(false, "ALERTA: Este DNI ya emitió un voto anteriormente.")
+                } else {
+                    val tips = getTips()
+                    val newBlock = VoteBlock(encryptedVote, tips.first, tips.second)
 
-        val voteData = hashMapOf(
-            "payload" to encryptedVote,
-            "timestamp" to FieldValue.serverTimestamp(),
-            "hash" to newBlock.hash,
-            "voterId" to voterId,
-            "device" to android.os.Build.MODEL
-        )
+                    val voteData = hashMapOf(
+                        "payload" to encryptedVote,
+                        "timestamp" to FieldValue.serverTimestamp(),
+                        "hash" to newBlock.hash,
+                        "voterId" to voterId,
+                        "device" to android.os.Build.MODEL
+                    )
 
-        db.collection("tangle_votos").add(voteData)
-            .addOnSuccessListener {
-                tangle.add(newBlock)
-                onComplete(true)
+                    db.collection("tangle_votos").document(voterId).set(voteData)
+                        .addOnSuccessListener {
+                            tangle.add(newBlock)
+                            onComplete(true, null)
+                        }
+                        .addOnFailureListener { e ->
+                            onComplete(false, "Error de red: ${e.message}")
+                        }
+                }
             }
             .addOnFailureListener { e ->
-                Log.e("DAGManager", "Error al encolar: ${e.message}")
-                onComplete(false)
+                onComplete(false, "Error de conexión con el nodo: ${e.message}")
             }
     }
 

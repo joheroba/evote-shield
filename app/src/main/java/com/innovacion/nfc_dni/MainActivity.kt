@@ -226,16 +226,34 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
         
         val payload = "VOTE:$summary|ID:$voterId|SIG:$signature|META=$currentVoterMeta"
         
-        dagManager.addVote(payload, voterId) { success ->
+        dagManager.addVote(payload, voterId) { success, errorMsg ->
             runOnUiThread { 
-                mostrarExitoFinal(offline = !success) 
+                if (success) {
+                    mostrarExitoFinal(offline = false)
+                } else {
+                    if (errorMsg?.contains("ALERTA") == true) {
+                        mostrarErrorDobleVoto(errorMsg)
+                    } else {
+                        mostrarExitoFinal(offline = true)
+                    }
+                }
             }
         }
+    }
+
+    private fun mostrarErrorDobleVoto(msg: String) {
+        AlertDialog.Builder(this)
+            .setTitle("🚫 ACCESO DENEGADO")
+            .setMessage(msg)
+            .setPositiveButton("ENTENDIDO") { _, _ -> resetApp() }
+            .setCancelable(false)
+            .show()
     }
 
     private fun mostrarExitoFinal(offline: Boolean) {
         val builder = AlertDialog.Builder(this)
         builder.setTitle(if (offline) "📦 Voto Almacenado Localmente" else "🏆 ¡Votación Exitosa!")
+        builder.setMessage(if (offline) "Se sincronizará cuando recupere la conexión." else "Su voto ha sido blindado en la Tangle.")
         builder.setPositiveButton("CERRAR") { _, _ -> resetApp() }
         builder.show()
     }

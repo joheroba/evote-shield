@@ -4,10 +4,10 @@ Este documento describe el funcionamiento técnico y operativo del sistema de vo
 
 ## 🏛️ Los 3 Pilares de Seguridad
 
-### 1. Validación de Identidad (NFC DNIe / PDF417 Binario)
-El sistema utiliza el sensor NFC del dispositivo para comunicarse con el chip del DNI electrónico peruano o, en su defecto, el escaneo binario de alta densidad para el **DNI Azul**.
-*   **Seguridad:** Se extrae un identificador único que genera un "Token de Sesión". Sin el documento físico, la app permanece bloqueada.
-*   **Soporte DNI Azul:** Implementación de decodificación ISO-8859-1 para capturar datos en condiciones de alta reflexión.
+### 1. Validación Criptográfica y Cross-Validation (NFC DNIe / PDF417 / MRZ OCR)
+El sistema utiliza múltiples capas de validación física para garantizar la autenticidad innegable del documento:
+*   **DNI Electrónico (DNIe):** La cámara extrae la franja MRZ (Machine Readable Zone) mediante Redes Neuronales de Reconocimiento de Texto (OCR). Estos datos generan matemáticamente la llave **BAC (Basic Access Control)**, permitiendo desbloquear el chip NFC de forma segura y blindada.
+*   **DNI Azul (Dual Validation):** Implementación de escaneo para PDF417 y código de barras lineal. Como mecanismo de contingencia y prevención de fraude por fotocopias, el sistema incorpora ML Kit OCR para leer la franja MRZ (`I<PER...`) del documento, realizando una comprobación cruzada de los dígitos de control.
 
 ### 2. Prueba de Vida Mecánica (Acelerómetro)
 Utilizamos el sensor de movimiento para detectar el **Pulso Humano**.

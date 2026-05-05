@@ -9,8 +9,9 @@ const slides = [
   { id: 1, component: "SlideTitle" },
   { id: 2, component: "SlideDiagnostico" },
   { id: 3, component: "SlideSolucion" },
-  { id: 4, component: "SlidePilar1" },
-  { id: 5, component: "SlideBlindaje" },
+  { id: 4, component: "SlideTecnologia" },
+  { id: 5, component: "SlidePilar1" },
+  { id: 6, component: "SlideBlindaje" },
   { id: 6, component: "SlideDobleValidacion" },
   { id: 7, component: "SlideAuditoria" },
   { id: 8, component: "SlidePilar2" },
@@ -172,6 +173,36 @@ function SlideSolucion({ visible }) {
         <div className="spec-card"><span>✓</span> PDF417 BINARY</div>
         <div className="spec-card"><span>✓</span> QUÓRUM 3-KEYS</div>
       </div>
+    </div>
+  );
+}
+
+function SlideTecnologia({ visible }) {
+  return (
+    <div className="slide-container" style={{ background: "#0F172A", color: "#fff" }}>
+      <p className="label-blue">STACK TECNOLÓGICO</p>
+      <h2 className="title-white" style={{fontSize: "40px", marginBottom: "30px"}}>ARQUITECTURA<br/>HÍBRIDA</h2>
+      
+      <div className="grid-specs" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "20px" }}>
+        <div className="tech-badge">🔥 Firebase</div>
+        <div className="tech-badge">🌐 IOTA (Tangle)</div>
+        <div className="tech-badge">☁️ Google Cloud</div>
+        <div className="tech-badge">🐍 Python</div>
+        <div className="tech-badge">📱 Kotlin</div>
+        <div className="tech-badge">⚡ JavaScript / React</div>
+        <div className="tech-badge">🛡️ Java (JMRTD)</div>
+        <div className="tech-badge">👁️ ML Kit (OCR)</div>
+      </div>
+      
+      <div style={{ background: "rgba(56, 189, 248, 0.1)", padding: "15px", borderRadius: "10px", border: "1px solid rgba(56, 189, 248, 0.2)" }}>
+        <p style={{fontSize: "11px", color: "#cbd5e1", margin: 0, lineHeight: "1.4"}}>
+          Integramos ecosistemas Cloud, Inteligencia Artificial y Web3 para garantizar un entorno soberano y de latencia cero.
+        </p>
+      </div>
+      
+      <style>{`
+        .tech-badge { background: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: 8px; font-size: 11px; font-weight: bold; color: #38bdf8; display: flex; align-items: center; justify-content: center; }
+      `}</style>
     </div>
   );
 }
@@ -412,7 +443,7 @@ function SlideAuditoria({ visible }) {
 // --- APP COMPONENT ---
 
 const SLIDE_COMPONENTS = {
-  SlideTitle, SlideDiagnostico, SlideSolucion,
+  SlideTitle, SlideDiagnostico, SlideSolucion, SlideTecnologia,
   SlidePilar1, SlideBlindaje, SlideDobleValidacion, SlideAuditoria, SlidePilar2, SlideMonitor, SlideImpacto, SlideCierre
 };
 

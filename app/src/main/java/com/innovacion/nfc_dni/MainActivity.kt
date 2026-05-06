@@ -92,12 +92,27 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
         }
     }
 
+    private var capturedMRZ: String? = null
+
     private fun processScannerData(rawData: String, format: Int) {
-        Log.d("SCANNER_RAW", "Raw: $rawData")
-        val cleanData = rawData.trim().filter { it.isLetterOrDigit() || it == '<' }
-        Log.d("SCANNER_LOG", "Formato: $format | Contenido: $cleanData")
+        Log.d("SCANNER_LOG", "Formato: $format | Contenido: $rawData")
         
-        val isLinear = format == Barcode.FORMAT_CODE_128 || format == Barcode.FORMAT_CODE_39 || cleanData.length < 15
+        if (format == -2) { // MRZ (DNIe)
+            capturedMRZ = rawData
+            val lines = rawData.split("\n")
+            if (lines.size >= 2) {
+                // Extraer DNI de la primera línea (después de I<PER)
+                val dni = lines[0].substring(5, 13)
+                dniHint = dni
+                statusText.text = "🆔 DNIe DETECTADO: $dni\nAPROXIME AL REVERSO DEL TELÉFONO"
+                statusText.setTextColor(ContextCompat.getColor(this, android.R.color.holo_green_dark))
+                Toast.makeText(this, "MRZ Capturada. Iniciando NFC...", Toast.LENGTH_LONG).show()
+                return
+            }
+        }
+
+        val cleanData = rawData.trim().filter { it.isLetterOrDigit() }
+        val isLinear = format == Barcode.FORMAT_CODE_128 || format == Barcode.FORMAT_CODE_39
         
         if (isLinear) {
             val digits = cleanData.filter { it.isDigit() }
@@ -115,20 +130,12 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
             }
         }
 
+        // Caso PDF417 (DNI Azul)
         val matches = Regex("""\d{8}""").findAll(cleanData).map { it.value }.toList()
-        var confirmedDni: String? = null
-        if (dniHint != null) {
-            if (cleanData.contains(dniHint!!)) confirmedDni = dniHint
-        }
-        
-        if (confirmedDni == null) confirmedDni = matches.find { !it.startsWith("19") && !it.startsWith("20") } ?: matches.firstOrNull()
+        val confirmedDni = if (dniHint != null && cleanData.contains(dniHint!!)) dniHint else matches.firstOrNull()
 
         if (confirmedDni != null) {
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle("🔍 Identidad Detectada")
-            builder.setMessage("DNI: $confirmedDni\n¿Vincular identidad?")
-            builder.setPositiveButton("VINCULAR") { _, _ -> applyDniFromScanner(confirmedDni!!, "V", cleanData) }
-            builder.show()
+            applyDniFromScanner(confirmedDni, "V", cleanData)
         }
     }
 
@@ -318,17 +325,42 @@ class MainActivity : AppCompatActivity(), NfcAdapter.ReaderCallback, SensorEvent
     override fun onAccuracyChanged(s: Sensor?, a: Int) {}
 
     override fun onTagDiscovered(tag: Tag?) {
-        // Esta es la parte crítica para tu DNIe real
         runOnUiThread {
-            // El DNIe usa tecnología ISO-DEP
             val techList = tag?.techList
             if (techList?.contains("android.nfc.tech.IsoDep") == true) {
-                // Aquí deberías pasar la MRZ extraída del reverso del DNI
-                // Como ejemplo hardcodeado del tuyo
-                val mrz = "I<PER09675365<77112270M3601165"
-                Thread {
-                    realizarLecturaChipReal(tag, mrz)
-                }.start()
+                val mrz = capturedMRZ
+                if (mrz != null) {
+                    val lines = mrz.split("\n")
+                    if (lines.size >= 2) {
+                        try {
+                            // Parsing dinámico de la MRZ (TD1 Format)
+                            // Línea 1: IDPER[DNI]...
+                            // Línea 2: [DOB][G][DOE]...
+                            val dni = lines[0].substring(5, 13)
+                            val dob = lines[1].substring(0, 6)
+                            val doe = lines[1].substring(8, 14)
+                            
+                            Log.d("BAC_KEY", "DNI: $dni | DOB: $dob | DOE: $doe")
+                            
+                            Thread {
+                                try {
+                                    JmrtdHelper.doBAC(tag, dni, dob, doe)
+                                    runOnUiThread {
+                                        Toast.makeText(this, "Chip verificado exitosamente", Toast.LENGTH_SHORT).show()
+                                        currentVoterId = dni
+                                        checkVoteEligibility()
+                                    }
+                                } catch (e: Exception) {
+                                    runOnUiThread { Toast.makeText(this, "Fallo al leer chip: ${e.message}", Toast.LENGTH_LONG).show() }
+                                }
+                            }.start()
+                        } catch (e: Exception) {
+                            Toast.makeText(this, "Error al parsear MRZ: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } else {
+                    Toast.makeText(this, "Escanee primero el reverso de su DNIe", Toast.LENGTH_LONG).show()
+                }
             } else {
                 Toast.makeText(this, "Chip no compatible con DNIe", Toast.LENGTH_SHORT).show()
             }

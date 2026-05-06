@@ -159,14 +159,18 @@ class ScannerActivity : AppCompatActivity() {
                 if (!isScanned) {
                     textRecognizer.process(image)
                         .addOnSuccessListener { visionText ->
-                            val cleanText = visionText.text.replace(" ", "").replace("\n", "").replace("|", "I").uppercase()
-                            // Regex más flexible: I<PER o 1<PER o IDPER (errores comunes de OCR)
-                            val mrzMatch = Regex("[I1|D]<PER[A-Z0-9<]+").find(cleanText)
+                            val fullLines = visionText.textBlocks.joinToString("\n") { it.text }
+                            val cleanLines = fullLines.uppercase().replace(" ", "").split("\n")
                             
-                            if (mrzMatch != null && mrzMatch.value.length >= 10 && !isScanned) {
+                            // Buscamos el patrón I<PER en cualquier línea
+                            val line1 = cleanLines.find { it.contains("I<PER") || it.contains("IDPER") }
+                            val line2 = cleanLines.find { it.matches(Regex("^[0-9]{6}[0-9][A-Z][0-9]{6}[0-9][A-Z]{3}.*")) }
+                            
+                            if (line1 != null && line2 != null && !isScanned) {
                                 isScanned = true
                                 val intent = Intent().apply {
-                                    putExtra("SCAN_RESULT", mrzMatch.value)
+                                    // Enviamos ambas líneas para el parsing BAC
+                                    putExtra("SCAN_RESULT", "$line1\n$line2")
                                     putExtra("SCAN_FORMAT", -2) // MRZ Indicator
                                 }
                                 setResult(Activity.RESULT_OK, intent)

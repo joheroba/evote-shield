@@ -12,8 +12,8 @@ android {
         applicationId = "com.innovacion.nfc_dni"
         minSdk = 24
         targetSdk = 34
-        versionCode = 3
-        versionName = "1.2" // Nueva versión para pruebas
+        versionCode = 4
+        versionName = "1.4" // DNIe Flow + Connectivity Fixes
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

@@ -586,6 +586,9 @@ function SlideCierre({ visible }) {
   return (
     <div className="slide-container" style={{ textAlign: "center" }}>
       <h2 className="title-final">DEMOCRACIA<br/>INVIOLABLE</h2>
+      <div style={{ display: "inline-block", background: "#1B6EF3", color: "#fff", fontSize: "10px", padding: "4px 10px", borderRadius: "10px", fontWeight: "bold", marginBottom: "15px" }}>
+        VERSION 1.4 - DNIe STABLE
+      </div>
       <p className="final-text">La tecnología para un Perú libre ya está aquí.</p>
       
       <div style={{ margin: "24px 0", display: "flex", flexDirection: "column", alignItems: "center" }}>
